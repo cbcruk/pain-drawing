@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light dark;
+
+  --color-paper: #e9ebe6;
+  --color-ink: #1a1f1c;
+  --color-rule: #c6cbc1;
+  --color-accent: #1e5f55;
+  --color-accent-wash: rgba(30, 95, 85, 0.07);
+  --color-silhouette: #dfe2db;
+  --color-well: #dfe2db;
+  --color-edge: #5f6a5f;
+  --color-dim: #4a544b;
+  --color-muted: #6b7469;
+  --color-faint: #9aa096;
+  --color-hint: #9aa79b;
+  --color-mark: #8a6a3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #141815;
+    --color-ink: #e4e8e1;
+    --color-rule: #333a34;
+    --color-accent: #5fbfae;
+    --color-accent-wash: rgba(95, 191, 174, 0.1);
+    --color-silhouette: #1e2420;
+    --color-well: #1b201d;
+    --color-edge: #8c9a8c;
+    --color-dim: #b3bcb2;
+    --color-muted: #8b968a;
+    --color-faint: #6a7469;
+    --color-hint: #5c6a5d;
+    --color-mark: #c9a45e;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family:
+    ui-sans-serif, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.serif {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+.shape {
+  cursor: pointer;
+  transition:
+    fill-opacity 0.18s ease,
+    stroke 0.18s ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
