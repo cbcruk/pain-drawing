@@ -94,6 +94,10 @@ interface StructureInView {
   depth: number             // 이 뷰에서의 층 번호
   reachable: boolean        // 표면에서 도달 가능한가
   shapes: Shape[]
+
+  // provenance (옵션) — 생략하면 뷰 값을 상속한다. 층별 트레이싱을 위해 있다.
+  fidelity?: 'schematic' | 'traced'
+  source?: { ref: string; license: string; tracedAt?: string }
 }
 
 interface View {
@@ -150,6 +154,7 @@ interface Probe {
     structure: Structure
     depth: number
     reachable: boolean
+    provenance: Provenance   // 상속까지 해석한 결과 — 후보마다 근거가 다를 수 있다
   }>   // depth 오름차순
 }
 ```
@@ -247,13 +252,18 @@ UI는 깊이 레일에 비활성 층이라도 후보가 있으면 표시한다 (
 - 446·447은 발 외곽선이 없는 골격도다. 실루엣 정합이 불가능하므로 중족골
   기하로 맞춰야 한다.
 
-### 남은 문제 — `fidelity`는 뷰 단위인데 트레이싱은 구조 단위다
+### provenance는 뷰와 구조 양쪽에 있다
 
-도판이 층별로 나뉘어 있어 트레이싱도 층별로 끝난다. 그런데 `fidelity`는 View의
-속성이라 "L0~L1은 traced, L2~L4는 schematic"인 중간 상태를 표현할 수 없다.
-부분 트레이싱을 하려면 `fidelity`를 `StructureInView`로 내리거나 뷰 값에 대한
-placement 단위 override가 필요하다. 전부 한 번에 트레이싱할 게 아니라면
-이 스키마 변경이 선행되어야 한다.
+도판이 층별로 나뉘어 있어 트레이싱도 층별로 끝난다. provenance가 View에만
+있으면 "L0~L1은 traced, L2~L4는 schematic"인 중간 상태를 표현할 수 없다.
+그래서 `StructureInView`도 provenance를 가질 수 있게 했다.
+
+- **생략하면 뷰 값을 상속한다.** 부분 트레이싱 중인 뷰가 정상 상태다.
+- **View의 provenance는 뷰 자신의 기하**(윤곽·뼈 참조·랜드마크)에 대한 주장이다.
+  구조를 다 트레이싱해도 윤곽이 모식도면 뷰는 여전히 schematic이다.
+- traced에 출처가 필수라는 불변식은 양쪽 모두에 걸린다.
+- UI 문구는 세 상태(`schematic` / `mixed` / `traced`)로 갈린다. 내보내기 블록의
+  Note와 구조 상세의 근거 표시는 **뷰가 아니라 지목된 그 구조**의 값을 쓴다.
 
 - **트레이싱 소스 — Gray's Anatomy 1918 (PD)**: 족저근 층별 도판이 필요한 형태
   그대로 존재한다(Fig 444 = 2층, Fig 445 = 3층, Fig 446 = 배측골간근, 1층·

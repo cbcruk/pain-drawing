@@ -4,7 +4,9 @@ import type {
   Pt,
   Structure,
   StructureInView,
+  View,
 } from '@/types/anatomy.types'
+import { effectiveProvenance } from './reference'
 
 /**
  * structureId → 그 구조가 이 뷰에서 렌더한 SVG element들.
@@ -30,7 +32,7 @@ function containsPoint(
 
 export function probeAt(
   point: Pt,
-  viewId: string,
+  view: View,
   placements: StructureInView[],
   structures: Map<string, Structure>,
   registry: ShapeRegistry,
@@ -49,10 +51,11 @@ export function probeAt(
       structure,
       depth: placement.depth,
       reachable: placement.reachable,
+      provenance: effectiveProvenance(placement, view),
     })
   }
 
   candidates.sort((a, b) => a.depth - b.depth)
 
-  return { point, viewId, candidates }
+  return { point, viewId: view.id, candidates }
 }

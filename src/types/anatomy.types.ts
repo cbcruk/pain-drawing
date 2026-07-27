@@ -36,13 +36,21 @@ export interface Structure {
   fmaId?: string
 }
 
-export interface StructureInView {
+export interface StructureInViewBase {
   structureId: string
   viewId: string
   depth: number
   reachable: boolean
   shapes: Shape[]
 }
+
+/**
+ * 도판이 층별로 나뉘어 있어 트레이싱도 층별로 끝난다. provenance가 View에만
+ * 있으면 "L0는 traced, L2는 아직"인 중간 상태를 표현할 수 없다. 생략하면
+ * 뷰 값을 상속하고, 적으면 그 구조만 따로 주장한다.
+ */
+export type StructureInView = StructureInViewBase &
+  (InheritedProvenance | Provenance)
 
 export interface Layer {
   depth: number
@@ -57,8 +65,8 @@ export interface BBox {
   h: number
 }
 
-export interface ViewSource {
-  /** 참조 자료 식별 — 판본까지 적는다. "Gray's Anatomy 1918, plate 442" */
+export interface TraceSource {
+  /** 참조 자료 식별 — 판본·도판 번호까지 적는다. "Gray's Anatomy 1918, Fig. 443" */
   ref: string
   license: string
   /** 트레이싱 시점. 참조가 개정되면 재정합 대상인지 판단하는 근거 */
@@ -66,12 +74,15 @@ export interface ViewSource {
 }
 
 /**
- * traced 뷰는 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야
+ * traced는 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야
  * 하므로 타입에서 막는다.
  */
-export type ViewProvenance =
+export type Provenance =
   | { fidelity: 'schematic'; source?: never }
-  | { fidelity: 'traced'; source: ViewSource }
+  | { fidelity: 'traced'; source: TraceSource }
+
+/** 상속 = 뷰 값을 따른다. 부분 트레이싱 중인 뷰가 정상 상태다. */
+export type InheritedProvenance = { fidelity?: never; source?: never }
 
 /**
  * 어느 면에서 본 것인가. 같은 region + 같은 side의 뷰끼리는 "같은 부위의 다른
@@ -106,12 +117,14 @@ export interface ViewBase {
   landmarks?: Record<string, Pt>
 }
 
-export type View = ViewBase & ViewProvenance
+/** 뷰의 provenance는 뷰 자신의 기하(윤곽·뼈 참조·랜드마크)에 대한 주장이다 */
+export type View = ViewBase & Provenance
 
 export interface ProbeCandidate {
   structure: Structure
   depth: number
   reachable: boolean
+  provenance: Provenance
 }
 
 export interface Probe {

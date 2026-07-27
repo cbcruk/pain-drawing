@@ -3,6 +3,7 @@ import type {
   Shape,
   Structure,
   StructureInView,
+  TraceSource,
   View,
 } from '@/types/anatomy.types'
 
@@ -97,13 +98,34 @@ export function structureToTs(structure: Structure): string {
   return lines.join('\n')
 }
 
+function sourceToTs(source: TraceSource, indent: string): string[] {
+  const lines = [
+    `${indent}source: {`,
+    `${indent}  ref: ${quote(source.ref)},`,
+    `${indent}  license: ${quote(source.license)},`,
+  ]
+
+  if (source.tracedAt) lines.push(`${indent}  tracedAt: ${quote(source.tracedAt)},`)
+  lines.push(`${indent}},`)
+
+  return lines
+}
+
 export function placementToTs(placement: StructureInView): string {
+  const provenance: string[] =
+    placement.fidelity === 'traced'
+      ? [`    fidelity: 'traced',`, ...sourceToTs(placement.source, '    ')]
+      : placement.fidelity === 'schematic'
+        ? [`    fidelity: 'schematic',`]
+        : []
+
   return [
     `  {`,
     `    structureId: ${quote(placement.structureId)},`,
     `    viewId: ${quote(placement.viewId)},`,
     `    depth: ${placement.depth},`,
     `    reachable: ${placement.reachable},`,
+    ...provenance,
     `    shapes: [`,
     ...placement.shapes.map((s) => shapeToTs(s, '      ')),
     `    ],`,
@@ -111,26 +133,11 @@ export function placementToTs(placement: StructureInView): string {
   ].join('\n')
 }
 
-/** 트레이싱으로 좌표를 만들었으면 뷰의 출처도 같이 갱신해야 한다 */
+/** 뷰 자신의 기하(윤곽·뼈 참조)를 트레이싱했을 때만 갱신한다 */
 export function viewProvenanceToTs(view: View): string {
-  if (view.fidelity === 'schematic') {
-    return `  fidelity: 'schematic',`
-  }
+  if (view.fidelity === 'schematic') return `  fidelity: 'schematic',`
 
-  const lines = [
-    `  fidelity: 'traced',`,
-    `  source: {`,
-    `    ref: ${quote(view.source.ref)},`,
-    `    license: ${quote(view.source.license)},`,
-  ]
-
-  if (view.source.tracedAt) {
-    lines.push(`    tracedAt: ${quote(view.source.tracedAt)},`)
-  }
-
-  lines.push(`  },`)
-
-  return lines.join('\n')
+  return [`  fidelity: 'traced',`, ...sourceToTs(view.source, '  ')].join('\n')
 }
 
 export function landmarksToTs(landmarks: Record<string, Pt>): string {

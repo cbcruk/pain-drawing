@@ -1,9 +1,10 @@
 import { Fragment } from 'react'
-import type { Structure } from '@/types/anatomy.types'
+import type { Provenance, Structure } from '@/types/anatomy.types'
 import { TISSUE } from '@/data/tissue'
 
 interface StructureDetailProps {
   structure: Structure
+  provenance: Provenance
 }
 
 function metaRows(structure: Structure): Array<[string, string]> {
@@ -23,7 +24,10 @@ function metaRows(structure: Structure): Array<[string, string]> {
   ]
 }
 
-export function StructureDetail({ structure }: StructureDetailProps) {
+export function StructureDetail({
+  structure,
+  provenance,
+}: StructureDetailProps) {
   const tissue = TISSUE[structure.kind]
 
   return (
@@ -57,6 +61,27 @@ export function StructureDetail({ structure }: StructureDetailProps) {
         style={{ color: 'var(--color-faint)' }}
       >
         {structure.name.la}
+      </div>
+
+      {/* 이 구조의 좌표가 어디서 왔는가 — 뷰가 아니라 구조 단위로 답한다 */}
+      <div
+        className="mt-2.5 inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono text-[10.5px]"
+        style={{
+          borderColor:
+            provenance.fidelity === 'traced'
+              ? 'var(--color-accent)'
+              : 'var(--color-rule)',
+          color:
+            provenance.fidelity === 'traced'
+              ? 'var(--color-accent)'
+              : 'var(--color-muted)',
+        }}
+      >
+        {provenance.fidelity === 'traced' ? (
+          <>트레이싱 · {provenance.source.ref}</>
+        ) : (
+          <>모식도 — 실측 근거 없음</>
+        )}
       </div>
 
       <dl className="mt-4 grid grid-cols-[70px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[13px] leading-relaxed">

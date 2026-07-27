@@ -3,7 +3,9 @@ import type {
   Shape,
   Structure,
   StructureInView,
+  StructureInViewBase,
   Tissue,
+  TraceSource,
 } from '@/types/anatomy.types'
 
 /**
@@ -153,14 +155,24 @@ export function toStructure(draft: Draft): Structure {
   return structure
 }
 
-export function toPlacement(draft: Draft, viewId: string): StructureInView {
-  return {
+/**
+ * 출처가 있으면 그 구조만 traced로 표시한다. 뷰 전체가 아니라 지금 찍은
+ * 구조에 대한 주장이므로, 층별로 나눠 트레이싱해도 데이터가 정직해진다.
+ */
+export function toPlacement(
+  draft: Draft,
+  viewId: string,
+  source?: TraceSource,
+): StructureInView {
+  const base: StructureInViewBase = {
     structureId: draft.structureId.trim(),
     viewId,
     depth: draft.depth,
     reachable: draft.reachable,
     shapes: draftShapes(draft),
   }
+
+  return source ? { ...base, fidelity: 'traced', source } : base
 }
 
 /** 기존 데이터를 편집하려고 되돌릴 때 */

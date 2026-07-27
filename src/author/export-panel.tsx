@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { View } from '@/types/anatomy.types'
+import type { TraceSource, View } from '@/types/anatomy.types'
 import { useCopy } from '@/hooks/use-copy'
 import { bundleToJson, bundleToTs, viewProvenanceToTs } from '@/lib/serialize'
 import { draftLabel, draftProblems, toPlacement, toStructure, type Draft } from './draft'
@@ -23,36 +23,44 @@ export function ExportPanel({
   const [format, setFormat] = useState<'ts' | 'json'>('ts')
   const { copiedKey, copy } = useCopy()
 
-  const { text, ready, blocked } = useMemo(() => {
+  const { text, ready, blocked, traced } = useMemo(() => {
     const ok = drafts.filter((d) => draftProblems(d).length === 0)
     const bad = drafts.filter((d) => draftProblems(d).length > 0)
 
+    const source: TraceSource | undefined =
+      sourceRef.trim() && sourceLicense.trim()
+        ? {
+            ref: sourceRef.trim(),
+            license: sourceLicense.trim(),
+            ...(sourceTracedAt.trim() ? { tracedAt: sourceTracedAt.trim() } : {}),
+          }
+        : undefined
+
     const bundle = {
       structures: ok.map(toStructure),
-      placements: ok.map((d) => toPlacement(d, view.id)),
+      placements: ok.map((d) => toPlacement(d, view.id, source)),
     }
 
     if (format === 'json') {
-      return { text: bundleToJson(bundle), ready: ok, blocked: bad }
+      return { text: bundleToJson(bundle), ready: ok, blocked: bad, traced: Boolean(source) }
     }
 
     const blocks = [bundleToTs(bundle)]
 
-    if (sourceRef.trim() && sourceLicense.trim()) {
-      const traced: View = {
-        ...view,
-        fidelity: 'traced',
-        source: {
-          ref: sourceRef.trim(),
-          license: sourceLicense.trim(),
-          ...(sourceTracedAt.trim() ? { tracedAt: sourceTracedAt.trim() } : {}),
-        },
-      }
-
-      blocks.push(`// → data/<region>/<view>/view.ts\n${viewProvenanceToTs(traced)}`)
+    if (source) {
+      // 뷰 블록은 윤곽·뼈 참조까지 다시 그렸을 때만 쓴다
+      const tracedView: View = { ...view, fidelity: 'traced', source }
+      blocks.push(
+        `// → data/<region>/<view>/view.ts — 뷰 기하까지 트레이싱했을 때만\n${viewProvenanceToTs(tracedView)}`,
+      )
     }
 
-    return { text: blocks.filter(Boolean).join('\n\n'), ready: ok, blocked: bad }
+    return {
+      text: blocks.filter(Boolean).join('\n\n'),
+      ready: ok,
+      blocked: bad,
+      traced: Boolean(source),
+    }
   }, [drafts, view, format, sourceRef, sourceLicense, sourceTracedAt])
 
   return (
@@ -74,7 +82,8 @@ export function ExportPanel({
     >
       <div className="flex flex-col gap-2">
         <div className="font-mono text-[11px]" style={{ color: 'var(--color-muted)' }}>
-          완성 {ready.length} · 미완성 {blocked.length}
+          완성 {ready.length} · 미완성 {blocked.length} ·{' '}
+          {traced ? '출처 있음 → placement마다 traced' : '출처 없음 → 뷰 값 상속'}
         </div>
 
         {blocked.length > 0 && (

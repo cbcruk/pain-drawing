@@ -1,4 +1,11 @@
-import type { Probe, Pt, Structure, View } from '@/types/anatomy.types'
+import type {
+  Probe,
+  Provenance,
+  Pt,
+  Structure,
+  StructureInView,
+  View,
+} from '@/types/anatomy.types'
 import { normalizePoint } from './geometry'
 
 const fixed2 = (n: number): string => n.toFixed(2)
@@ -9,11 +16,45 @@ export function koName(structure: Structure): string {
   return revised ? `${classic} · ${revised}` : classic
 }
 
-/** 정밀도 고지 — 하드코딩하지 않고 뷰의 fidelity가 문구를 정한다 */
-export function fidelityNote(view: View): string {
+/** placement가 스스로 주장하지 않으면 뷰 값을 따른다 */
+export function effectiveProvenance(
+  placement: StructureInView | undefined,
+  view: View,
+): Provenance {
+  if (placement?.fidelity === 'traced') {
+    return { fidelity: 'traced', source: placement.source }
+  }
+  if (placement?.fidelity === 'schematic') return { fidelity: 'schematic' }
+
   return view.fidelity === 'traced'
-    ? `${view.source.ref} 트레이싱 기반 위치`
+    ? { fidelity: 'traced', source: view.source }
+    : { fidelity: 'schematic' }
+}
+
+/** 정밀도 고지 — 하드코딩하지 않고 데이터가 문구를 정한다 */
+export function fidelityNote(provenance: Provenance): string {
+  return provenance.fidelity === 'traced'
+    ? `${provenance.source.ref} 트레이싱 기반 위치`
     : '모식도 기반 위치'
+}
+
+/** 뷰 전체를 한 문장으로 — 부분 트레이싱이면 그렇다고 말해야 한다 */
+export function fidelitySummary(
+  view: View,
+  placements: StructureInView[],
+): 'schematic' | 'traced' | 'mixed' {
+  if (placements.length === 0) return view.fidelity
+
+  let traced = 0
+  for (const placement of placements) {
+    if (effectiveProvenance(placement, view).fidelity === 'traced') traced++
+  }
+
+  if (traced === 0) return 'schematic'
+
+  return traced === placements.length && view.fidelity === 'traced'
+    ? 'traced'
+    : 'mixed'
 }
 
 function layerLabel(view: View, depth: number): string {
@@ -59,7 +100,10 @@ export function buildReferenceBlock(
     lines.push(`Adjacent: ${parts.join(', ')}`)
   }
 
-  lines.push(`Note: ${fidelityNote(view)}이며 증상의 원인 판단은 포함하지 않음`)
+  // 고지는 뷰가 아니라 지목된 그 구조의 근거를 말해야 한다
+  lines.push(
+    `Note: ${fidelityNote(selected.provenance)}이며 증상의 원인 판단은 포함하지 않음`,
+  )
 
   return lines.join('\n')
 }
