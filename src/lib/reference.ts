@@ -9,6 +9,13 @@ export function koName(structure: Structure): string {
   return revised ? `${classic} · ${revised}` : classic
 }
 
+/** 정밀도 고지 — 하드코딩하지 않고 뷰의 fidelity가 문구를 정한다 */
+export function fidelityNote(view: View): string {
+  return view.fidelity === 'traced'
+    ? `${view.source.ref} 트레이싱 기반 위치`
+    : '모식도 기반 위치'
+}
+
 function layerLabel(view: View, depth: number): string {
   const layer = view.layers.find((l) => l.depth === depth)
 
@@ -52,7 +59,7 @@ export function buildReferenceBlock(
     lines.push(`Adjacent: ${parts.join(', ')}`)
   }
 
-  lines.push('Note: 모식도 기반 위치이며 증상의 원인 판단은 포함하지 않음')
+  lines.push(`Note: ${fidelityNote(view)}이며 증상의 원인 판단은 포함하지 않음`)
 
   return lines.join('\n')
 }

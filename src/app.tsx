@@ -236,8 +236,10 @@ export function App() {
         className="mx-auto mt-12 max-w-5xl border-t pt-5 text-[11.5px] leading-relaxed"
         style={{ borderColor: 'var(--color-rule)', color: 'var(--color-muted)' }}
       >
-        형태는 모식도입니다. 위치 관계와 층 순서를 보기 위한 것이지 실측 도해가
-        아닙니다. 구조를 가리키는 도구이며 증상의 원인을 판단하지 않습니다.
+        {view.fidelity === 'traced'
+          ? `형태는 ${view.source.ref}를 참조로 트레이싱한 것입니다. 위치 관계와 층 순서가 우선이며 개인차는 반영하지 않습니다.`
+          : '형태는 모식도입니다. 위치 관계와 층 순서를 보기 위한 것이지 실측 도해가 아닙니다.'}{' '}
+        구조를 가리키는 도구이며 증상의 원인을 판단하지 않습니다.
       </footer>
     </div>
   )

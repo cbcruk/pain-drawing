@@ -1,5 +1,10 @@
 import type { Shape, View } from '@/types/anatomy.types'
 
+/*
+  좌표는 전부 손으로 찍은 모식도다. landmarks는 그 위에서 잡은 기준점이고,
+  실측 트레이싱으로 교체할 때 이 4점을 맞춰 정합한다. (SPEC "저작 도구" 참조)
+*/
+
 const OUTLINE =
   'M 150 692 C 112 692, 96 664, 98 626 C 101 566, 104 522, 102 478 ' +
   'C 100 432, 68 400, 62 348 C 57 306, 54 280, 64 262 C 72 250, 90 246, 110 248 ' +
@@ -40,6 +45,13 @@ export const footPlantarView: View = {
   silhouette: TOES,
   boneRef: BONES,
   bbox: { x: 54, y: 150, w: 202, h: 542 },
+  fidelity: 'schematic',
+  landmarks: {
+    'calcaneus-posterior': [150, 690],
+    'mt1-head': [230, 272],
+    'mt5-tuberosity': [84, 404],
+    'hallux-tip': [237, 148],
+  },
   layers: [
     { depth: 0, ko: '건막', en: 'aponeurosis' },
     { depth: 1, ko: '1층 · 표층', en: 'first layer' },
