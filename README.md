@@ -10,6 +10,9 @@ pnpm install
 pnpm dev
 ```
 
+- `/` — 지시 도구 (제품)
+- `/author.html` — 좌표 저작 도구 (M1). 별도 엔트리라 제품 번들에 섞이지 않는다.
+
 ## 구조
 
 ```
@@ -19,6 +22,8 @@ src/
     geometry.ts                 ribbon() 중심선+폭 → path, 좌표 정규화
     probe.ts                    isPointInFill 기반 히트테스트
     reference.ts                내보내기 블록 + URL 상태 직렬화
+    registration.ts             참조 이미지 ↔ 뷰 좌표 상사변환 (랜드마크 정합)
+    serialize.ts                Structure/StructureInView → 붙여넣기용 TS·JSON
   data/
     index.ts                    조립 + 개발 모드 무결성 검사
     tissue.ts                   조직 유형별 색·라벨
@@ -33,7 +38,24 @@ src/
     probe-readout/              한 점 아래 구조를 층별로 나열
     structure-detail/           선택 구조 상세
     reference-export/           블록·URL 복사
+  author/                       저작 도구 (별도 엔트리)
+    author.tsx                  상태 조립 — 정합·도형·메타데이터·내보내기
+    canvas.tsx                  참조 이미지 + 중심선 편집 SVG
+    draft.ts                    편집 중 표현 ↔ 스키마 변환
+    storage.ts                  localStorage 세션 (이미지는 저장 안 함)
 ```
+
+## 저작 도구 사용 순서
+
+1. **참조 정합** — 이미지를 올리고 `view.landmarks` 기준점을 차례로 클릭한다.
+   2점부터 변환이 잡히고 3점 이상은 최소제곱. 반전 여부는 잔차가 작은 쪽으로
+   자동 선택되므로 반대쪽 발 사진도 그대로 쓸 수 있다. rms가 정합 품질이다.
+2. **도형** — 캔버스 클릭으로 중심선 점 추가, 끌어서 이동, 방향키로 미세 조정
+   (Shift 10씩), 폭은 슬라이더. Ctrl+Z로 되돌리기.
+3. **메타데이터** — 이름 3종·조직·층·기시/정지. 조직을 인대로 바꾸면 폼이
+   `attachments` 2칸으로 바뀐다. 스키마 차이를 UI가 강제한다.
+4. **내보내기** — TS 블록을 `structures.ts` / `placements.ts`에 붙여넣는다.
+   출처를 채우면 `fidelity: 'traced'` 블록도 함께 나온다.
 
 ## 설계상 지켜야 할 것
 
@@ -52,8 +74,8 @@ src/
 ## 마일스톤
 
 - [x] **M0** 스키마 + `ribbon()` 렌더러 + `isPointInFill` probe, 발바닥 데이터 이식
-- [ ] **M1** 저작 도구 — 좌표 찍기 병목 제거 (다음 우선순위).
-      인수 테스트는 발바닥 재트레이싱
+- [x] **M1** 저작 도구 — 정합·중심선 편집·메타데이터·내보내기 동작.
+      **인수 테스트(발바닥 재트레이싱)는 아직 실행 안 됨** — 실측 참조 자료가 필요하다
 - [ ] **M2** 발바닥 뷰 완성 — 역방향 조회(이름 → 위치) 미구현
 - [ ] **M2.5** 발등으로 다중 뷰 검증 — 스키마·배치는 준비됨, 좌표는 M1 뒤
 - [ ] **M3** 무릎으로 검증 — `attachments` 스키마
