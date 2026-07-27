@@ -87,7 +87,13 @@ export function App() {
       view,
     )
 
-    window.history.replaceState(null, '', search)
+    // URL 동기화는 best-effort다. 임베드(sandbox iframe)에서는 replaceState가
+    // SecurityError를 던지는데, 그걸로 앱이 죽으면 안 된다.
+    try {
+      window.history.replaceState(null, '', search)
+    } catch {
+      /* 주소창 갱신 실패 — 내보내기 버튼의 URL 복사는 계속 동작한다 */
+    }
   }, [view, depth, probe, selectedId])
 
   const selected = selectedId ? STRUCTURE_BY_ID.get(selectedId) : undefined
