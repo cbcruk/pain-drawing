@@ -13,5 +13,6 @@ export const TISSUE: Record<Tissue, TissueStyle> = {
   ligament: { fill: '#B79A9A', onFill: '#2A1D1D', label: '인대' },
   fascia: { fill: '#93A192', onFill: '#1E2A1E', label: '건막' },
   nerve: { fill: '#8E86A8', onFill: '#1D1A28', label: '신경' },
+  vessel: { fill: '#9C4A57', onFill: '#FFFFFF', label: '혈관' },
   bone: { fill: '#B8AF96', onFill: '#2A261A', label: '뼈' },
 }

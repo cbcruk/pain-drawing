@@ -10,6 +10,7 @@ export type Tissue =
   | 'ligament'
   | 'fascia'
   | 'nerve'
+  | 'vessel'
   | 'bone'
 
 export interface StructureName {
@@ -72,9 +73,23 @@ export type ViewProvenance =
   | { fidelity: 'schematic'; source?: never }
   | { fidelity: 'traced'; source: ViewSource }
 
+/**
+ * 어느 면에서 본 것인가. 같은 region + 같은 side의 뷰끼리는 "같은 부위의 다른
+ * 면"이므로 서로 전환 가능하다. label 자유 텍스트로 두면 이 판정을 못 한다.
+ */
+export type Aspect =
+  | 'plantar'
+  | 'dorsal'
+  | 'anterior'
+  | 'posterior'
+  | 'medial'
+  | 'lateral'
+
 export interface ViewBase {
   id: string
   region: string
+  side: 'right' | 'left'
+  aspect: Aspect
   label: { ko: string; en: string }
   viewBox: string
   outline: string

@@ -20,11 +20,13 @@ src/
     probe.ts                    isPointInFill 기반 히트테스트
     reference.ts                내보내기 블록 + URL 상태 직렬화
   data/
+    index.ts                    조립 + 개발 모드 무결성 검사
     tissue.ts                   조직 유형별 색·라벨
-    foot-plantar/
-      view.ts                   뷰 정의 (윤곽·층·bbox·뼈 참조)
-      structures.ts             뷰 무관 구조 메타데이터
-      placements.ts             이 뷰에서의 depth + shapes
+    foot/
+      structures.ts             뷰 무관 구조 메타데이터 — 부위 단위로 공유
+      plantar/
+        view.ts                 뷰 정의 (윤곽·층·bbox·랜드마크·뼈 참조)
+        placements.ts           이 뷰에서의 depth + shapes
   components/
     anatomy-view/               SVG 도해 + 히트테스트 대상 등록
     depth-rail/                 층 선택 + 다른 층 후보 표시
@@ -39,7 +41,10 @@ src/
   저장하고 `ribbon()`이 렌더 시점에 path를 만든다. 좌표 하나만 손으로 고칠 수 있고
   diff가 읽힌다.
 - **depth는 Structure가 아니라 StructureInView의 속성이다.** 같은 구조가 뷰마다
-  다른 층에 있을 수 있다. 발바닥에서는 안 드러나지만 어깨에서 반드시 필요하다.
+  다른 층에 있을 수 있다. 발바닥 하나로는 안 드러난다 — 발등 뷰에서
+  `dorsal-interossei`가 L4(발바닥) ↔ 얕은 층(발등)으로 갈리며 처음 검증된다.
+- **`Structure`는 뷰가 아니라 부위에 속한다.** 그래서 `data/foot/structures.ts`가
+  뷰 폴더 밖에 있다. 발바닥·발등이 같은 레코드를 참조한다.
 - **비활성 층을 `display:none`으로 끄지 않는다.** `isPointInFill`은 DOM에 있는
   element만 판정한다. `opacity: 0` + `pointer-events: none`으로 처리한다.
 - 반환은 단일 정답이 아니라 **후보 목록**이다. 표면 한 점 아래에 4~5개가 겹친다.
@@ -50,7 +55,8 @@ src/
 - [ ] **M1** 저작 도구 — 좌표 찍기 병목 제거 (다음 우선순위).
       인수 테스트는 발바닥 재트레이싱
 - [ ] **M2** 발바닥 뷰 완성 — 역방향 조회(이름 → 위치) 미구현
-- [ ] **M3** 무릎으로 검증 — `attachments` 스키마, 전/후 2뷰
+- [ ] **M2.5** 발등으로 다중 뷰 검증 — 스키마·배치는 준비됨, 좌표는 M1 뒤
+- [ ] **M3** 무릎으로 검증 — `attachments` 스키마
 - [ ] 어깨 — 다중 뷰 + `reachable`. 무릎이 통과한 다음에만
 
 ## 현재 상태 메모

@@ -61,7 +61,8 @@ type Shape =
 그래서 둘로 쪼갠다.
 
 ```ts
-type Tissue = 'muscle' | 'tendon' | 'ligament' | 'fascia' | 'nerve' | 'bone'
+type Tissue =
+  'muscle' | 'tendon' | 'ligament' | 'fascia' | 'nerve' | 'vessel' | 'bone'
 
 // 뷰와 무관한 구조 정보 — 하나만 존재
 interface Structure {
@@ -98,13 +99,24 @@ interface StructureInView {
 interface View {
   id: string                // 'foot-plantar', 'knee-anterior', 'shoulder-post'...
   region: string            // 'foot', 'knee', 'shoulder'
+  side: 'right' | 'left'
+  aspect: 'plantar' | 'dorsal' | 'anterior' | 'posterior' | 'medial' | 'lateral'
   label: { ko: string; en: string }
   viewBox: string
   outline: string           // 부위 실루엣 path (배경)
   bbox: { x: number; y: number; w: number; h: number }  // 좌표 정규화용
   layers: { depth: number; ko: string; en: string }[]   // 이 뷰의 층 정의
+
+  landmarks?: Record<string, Pt>   // 해부학적 기준점 — 트레이싱 정합·뷰 간 이송
+
+  // provenance — schematic이면 출처 없음, traced면 source 필수 (유니온으로 강제)
+  fidelity: 'schematic' | 'traced'
+  source?: { ref: string; license: string; tracedAt?: string }
 }
 ```
+
+`region`/`side`/`aspect`는 자유 텍스트 label에서 분리한다. "같은 부위의 다른
+면"(발바닥 ↔ 발등)을 코드가 판정할 수 있어야 뷰 전환이 성립한다.
 
 `reachable: false`는 버리는 필드가 아니다. "이 지점에서는 만질 수 없지만 이
 부위에 있습니다"는 정직하고 유용한 정보다. 견갑하근을 밖에서 누를 수 있다고
@@ -206,6 +218,34 @@ CC BY-SA 렌더.
 보장이 없다. 트레이싱의 의미는 "정확해짐"이 아니라 **"근거를 댈 수 있음"**에
 가깝다. `fidelity`가 traced로 바뀌어도 UI에서 정밀도를 과장하지 않는다.
 
+## 발등 뷰 — 다중 뷰 변수를 격리하는 카드
+
+발등은 콘텐츠 추가가 아니라 **스키마 검증**으로 넣는다.
+
+`Structure` / `StructureInView` 분리는 M0에서 타입으로 못 박았지만 아직 한 번도
+검증되지 않았다. 지금은 모든 구조의 placement가 정확히 1개라, depth가 Structure가
+아니라 StructureInView에 있어야 할 이유가 데이터로 드러나지 않는다. 발등이 그걸
+바로 증명한다 — `dorsal-interossei`는 발바닥 뷰에서 **최심층(L4)**이고 발등
+뷰에서는 신근건 바로 아래 얕은 층이다. 같은 Structure 하나에 placement 둘,
+depth가 갈린다. `fibularis-longus-tendon` · `tibialis-posterior-tendon`도 같다.
+
+**순서상 발등은 무릎보다 먼저다.** M3 무릎은 인대(`attachments`)와 전/후 2뷰를
+동시에 들여와서 "변수 하나" 원칙을 스스로 깬다. 이미 검증된 부위에서 다중 뷰만
+먼저 통과시키면, 무릎에 남는 변수는 인대 하나가 된다.
+
+좌표 자체는 M1 뒤에 찍는다. 발등도 100개 단위라 손으로 찍으면 같은 병목이다.
+
+계획:
+- **윤곽·랜드마크는 발바닥을 미러**해서 출발한다(오른발 발등은 무지가 화면 왼쪽).
+  싸기 때문만이 아니라 두 뷰의 랜드마크가 대응해야 **같은 지점의 반대 면으로
+  이송**이 가능해서다. 내부 구조는 미러가 아니라 새로 찍는다.
+- 층은 발바닥의 4층 체계와 **의미가 다르다**. 발등에는 그런 교과서적 층이 없다:
+  L0 신근지대 / L1 장신근건(EDL 4갈래·EHL·전경골근건·제3비골근) /
+  L2 단신근(EDB·EHB) / L3 심부(배측골간근·심부비골신경·족배동맥).
+- 발등은 얇아서 depth rail의 가치가 낮다. 대신 "이 힘줄이 어느 발가락으로
+  가는가"가 주 질문이 되므로 역방향 조회(M2)가 발바닥보다 더 쓸모 있다.
+- `reachable`은 발등에서도 검증되지 않는다(거의 전부 true). 그건 어깨 몫이다.
+
 ## 마일스톤
 
 1. **M0 — 스키마 + ribbon 렌더러**: 위 타입 정의, `ribbon()`,
@@ -213,12 +253,15 @@ CC BY-SA 렌더.
 2. **M1 — 저작 도구**: 좌표 찍기 병목 제거. 이게 이번 핵심.
    인수 테스트는 발바닥 재트레이싱(`fidelity: schematic → traced`).
 3. **M2 — 발바닥 뷰 완성**: probe → 후보 목록 → 상세 → 내보내기 3종.
-4. **M3 — 무릎으로 검증**: 인대가 주인공인 부위. `attachments` 스키마,
-   전/후 2뷰가 실제로 버티는지 확인. **어깨보다 먼저 무릎.**
-5. (이후) 어깨 — 다중 뷰 + reachable. 무릎이 통과한 다음에만.
+4. **M2.5 — 발등으로 다중 뷰 검증**: 같은 Structure가 뷰마다 다른 depth를
+   갖는 경로, 뷰 전환 UI, 지점 이송. 변수는 "뷰가 둘" 하나뿐이다.
+5. **M3 — 무릎으로 검증**: 인대가 주인공인 부위. `attachments` 스키마가
+   실제로 버티는지 확인. **어깨보다 먼저 무릎.**
+6. (이후) 어깨 — 다중 뷰 + reachable. 무릎이 통과한 다음에만.
 
 검증 순서를 지킬 것. 어깨는 새 변수를 한꺼번에 도입해서, 거기서 실패하면 어느
-가정이 깨졌는지 모른다. 무릎은 변수 하나(인대)만 바꾼다.
+가정이 깨졌는지 모른다. 발등은 변수 하나(다중 뷰), 무릎은 그 다음 하나(인대)만
+바꾼다.
 
 ## 품질 바닥
 

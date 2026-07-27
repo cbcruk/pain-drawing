@@ -39,6 +39,8 @@ const BONES: Shape[] = [
 export const footPlantarView: View = {
   id: 'foot-plantar',
   region: 'foot',
+  side: 'right',
+  aspect: 'plantar',
   label: { ko: '발바닥 · 오른발', en: 'plantar foot, right' },
   viewBox: '40 130 230 580',
   outline: OUTLINE,
