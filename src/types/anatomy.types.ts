@@ -56,6 +56,8 @@ export interface Layer {
   depth: number
   ko: string
   en: string
+  /** 층 이름은 정확하지만 어렵다. 깊이 레일에서만 쓰는 한국어 풀이. */
+  hint?: string
 }
 
 export interface BBox {

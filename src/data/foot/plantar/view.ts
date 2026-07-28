@@ -55,10 +55,35 @@ export const footPlantarView: View = {
     'hallux-tip': [237, 148],
   },
   layers: [
-    { depth: 0, ko: '건막', en: 'aponeurosis' },
-    { depth: 1, ko: '1층 · 표층', en: 'first layer' },
-    { depth: 2, ko: '2층', en: 'second layer' },
-    { depth: 3, ko: '3층', en: 'third layer' },
-    { depth: 4, ko: '4층 · 심층', en: 'fourth layer' },
+    {
+      depth: 0,
+      ko: '건막',
+      en: 'aponeurosis',
+      hint: '피부 바로 밑을 감싸는 질긴 막',
+    },
+    {
+      depth: 1,
+      ko: '1층 · 표층',
+      en: 'first layer',
+      hint: '피부에서 첫 번째로 만나는 근육',
+    },
+    {
+      depth: 2,
+      ko: '2층',
+      en: 'second layer',
+      hint: '종아리에서 내려온 힘줄이 지나는 층',
+    },
+    {
+      depth: 3,
+      ko: '3층',
+      en: 'third layer',
+      hint: '엄지·새끼발가락 밑동을 움직이는 근육',
+    },
+    {
+      depth: 4,
+      ko: '4층 · 심층',
+      en: 'fourth layer',
+      hint: '뼈에 바로 붙은 가장 깊은 층',
+    },
   ],
 }
