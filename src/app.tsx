@@ -10,6 +10,8 @@ import { denormalizePoint } from '@/lib/geometry'
 import { probeAt, type ShapeRegistry } from '@/lib/probe'
 import {
   buildReferenceBlock,
+  effectiveProvenance,
+  fidelitySummary,
   parseSearch,
   stateToSearch,
 } from '@/lib/reference'
@@ -44,8 +46,8 @@ export function App() {
 
   const runProbe = useCallback(
     (point: Pt): Probe =>
-      probeAt(point, view.id, placements, STRUCTURE_BY_ID, registry),
-    [view.id, placements, registry],
+      probeAt(point, view, placements, STRUCTURE_BY_ID, registry),
+    [view, placements, registry],
   )
 
   const handleProbe = useCallback(
@@ -87,10 +89,30 @@ export function App() {
       view,
     )
 
-    window.history.replaceState(null, '', search)
+    // URL 동기화는 best-effort다. 임베드(sandbox iframe)에서는 replaceState가
+    // SecurityError를 던지는데, 그걸로 앱이 죽으면 안 된다.
+    try {
+      window.history.replaceState(null, '', search)
+    } catch {
+      /* 주소창 갱신 실패 — 내보내기 버튼의 URL 복사는 계속 동작한다 */
+    }
   }, [view, depth, probe, selectedId])
 
   const selected = selectedId ? STRUCTURE_BY_ID.get(selectedId) : undefined
+
+  const summary = useMemo(
+    () => fidelitySummary(view, placements),
+    [view, placements],
+  )
+
+  const selectedProvenance = useMemo(
+    () =>
+      effectiveProvenance(
+        placements.find((p) => p.structureId === selectedId),
+        view,
+      ),
+    [placements, selectedId, view],
+  )
 
   const visibleOnLayer = useMemo(
     () =>
@@ -183,7 +205,12 @@ export function App() {
             />
           </section>
 
-          {selected && <StructureDetail structure={selected} />}
+          {selected && (
+            <StructureDetail
+              structure={selected}
+              provenance={selectedProvenance}
+            />
+          )}
 
           {probe && (
             <ReferenceExport block={referenceBlock} url={referenceUrl} />
@@ -236,8 +263,13 @@ export function App() {
         className="mx-auto mt-12 max-w-5xl border-t pt-5 text-[11.5px] leading-relaxed"
         style={{ borderColor: 'var(--color-rule)', color: 'var(--color-muted)' }}
       >
-        형태는 모식도입니다. 위치 관계와 층 순서를 보기 위한 것이지 실측 도해가
-        아닙니다. 구조를 가리키는 도구이며 증상의 원인을 판단하지 않습니다.
+        {summary === 'traced' &&
+          `형태는 ${view.fidelity === 'traced' ? view.source.ref : ''}를 참조로 트레이싱한 것입니다. 위치 관계와 층 순서가 우선이며 개인차는 반영하지 않습니다.`}
+        {summary === 'mixed' &&
+          '형태는 일부만 실제 해부 도판을 트레이싱한 것이고 나머지는 모식도입니다. 구조를 선택하면 그 구조의 근거가 표시됩니다.'}
+        {summary === 'schematic' &&
+          '형태는 모식도입니다. 위치 관계와 층 순서를 보기 위한 것이지 실측 도해가 아닙니다.'}{' '}
+        구조를 가리키는 도구이며 증상의 원인을 판단하지 않습니다.
       </footer>
     </div>
   )

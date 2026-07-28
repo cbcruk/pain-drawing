@@ -1,6 +1,22 @@
-import type { StructureInView } from '@/types/anatomy.types'
+import type { StructureInView, TraceSource } from '@/types/anatomy.types'
 
 const VIEW_ID = 'foot-plantar'
+
+/*
+  Gray443(1층)에서 트레이싱한 좌표는 도판 픽셀을 180° 회전 + 등방 축소로 옮긴
+  것이다: vx = 264.3 − 0.71·px, vy = 695 − 0.71·py. 변환은 뒤꿈치 정점과 무지
+  끝을 뷰 랜드마크에 맞춰 구했다. 경계는 눈금 위에서 읽었고 오차는 뷰 좌표
+  기준 ±3~4 수준이다.
+
+  같은 도판에서 족저건막과 단지굴근은 아직 트레이싱하지 않았다. 건막이 잘려
+  있어 그 아래 단지굴근의 기시부가 가려지고, 건막 자체도 원위부가 잘려 있다.
+  건막이 온전한 도판(Gray441/442 확인 필요)이 있어야 한다.
+*/
+const GRAY_443: TraceSource = {
+  ref: "Gray's Anatomy 1918, Fig. 443 (sole, first layer)",
+  license: 'Public domain',
+  tracedAt: '2026-07',
+}
 
 export const footPlantarPlacements: StructureInView[] = [
   {
@@ -48,11 +64,16 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 1,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_443,
     shapes: [
       {
         t: 'ribbon',
-        p: [[188, 618], [202, 540], [212, 460], [220, 380], [228, 306], [238, 254]],
-        w: [30, 34, 32, 28, 21, 13],
+        p: [
+          [184, 617], [190, 588], [195, 553], [198, 518], [200, 482],
+          [203, 447], [206, 411], [211, 376], [217, 340], [225, 305],
+        ],
+        w: [16, 24, 31, 34, 38, 43, 46, 42, 39, 28],
       },
     ],
   },
@@ -78,11 +99,16 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 1,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_443,
     shapes: [
       {
         t: 'ribbon',
-        p: [[116, 624], [100, 540], [88, 458], [80, 388], [76, 322], [82, 284]],
-        w: [26, 30, 28, 24, 17, 11],
+        p: [
+          [112, 617], [105, 588], [100, 553], [95, 518], [90, 482],
+          [87, 447], [83, 411], [80, 376], [78, 340], [80, 305],
+        ],
+        w: [21, 32, 38, 38, 40, 40, 40, 40, 32, 21],
       },
     ],
   },
