@@ -1,4 +1,5 @@
 import type { Shape, View } from '@/types/anatomy.types'
+import { mirrorView } from '@/data/mirror'
 
 /*
   좌표는 전부 손으로 찍은 모식도다. landmarks는 그 위에서 잡은 기준점이고,
@@ -87,3 +88,8 @@ export const footPlantarView: View = {
     },
   ],
 }
+
+export const footPlantarLeftView: View = mirrorView(footPlantarView, {
+  id: 'foot-plantar-left',
+  label: { ko: '발바닥 · 왼발', en: 'plantar foot, left' },
+})

@@ -70,8 +70,12 @@ export function buildReferenceBlock(
   selectedId: string | null,
 ): string {
   const [nx, ny] = normalizePoint(probe.point, view.bbox)
+
+  // 반전 뷰가 독립적으로 뜬 좌표로 읽히면 아래 Note의 출처가 거짓말이 된다
+  const region = view.mirrorOf ? `${view.label.en} (mirrored)` : view.label.en
+
   const lines = [
-    `Region: ${view.label.en}`,
+    `Region: ${region}`,
     `Point: (${fixed2(nx)}, ${fixed2(ny)}) normalized`,
   ]
 

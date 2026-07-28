@@ -4,6 +4,7 @@ import {
   DEFAULT_VIEW_ID,
   STRUCTURE_BY_ID,
   getPlacements,
+  getSideVariants,
   getView,
 } from '@/data'
 import { denormalizePoint } from '@/lib/geometry'
@@ -20,13 +21,17 @@ import { DepthRail } from '@/components/depth-rail/depth-rail'
 import { ProbeReadout } from '@/components/probe-readout/probe-readout'
 import { StructureDetail } from '@/components/structure-detail/structure-detail'
 import { ReferenceExport } from '@/components/reference-export/reference-export'
+import { ViewSwitch } from '@/components/view-switch/view-switch'
 
 const initial = parseSearch(window.location.search)
 const initialView = getView(initial.viewId ?? DEFAULT_VIEW_ID) ?? getView(DEFAULT_VIEW_ID)!
 
 export function App() {
-  const view = initialView
+  const [viewId, setViewId] = useState(initialView.id)
+
+  const view = getView(viewId) ?? initialView
   const placements = useMemo(() => getPlacements(view.id), [view.id])
+  const sideVariants = useMemo(() => getSideVariants(view), [view])
 
   const [depth, setDepth] = useState(initial.depth ?? 1)
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -71,8 +76,12 @@ export function App() {
     [depthOf],
   )
 
+  // URL 복원은 첫 렌더 한 번뿐이다. 뷰를 바꿀 때마다 되살아나면 안 된다
+  const restored = useRef(false)
+
   useEffect(() => {
-    if (!initial.normalizedPoint) return
+    if (restored.current || !initial.normalizedPoint) return
+    restored.current = true
 
     const point = denormalizePoint(initial.normalizedPoint, view.bbox)
     setProbe(runProbe(point))
@@ -163,29 +172,39 @@ export function App() {
       </header>
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
-        <div className="flex gap-4">
-          <DepthRail
-            layers={view.layers}
-            depth={depth}
-            probe={probe}
-            showBones={showBones}
-            onDepthChange={setDepth}
-            onShowBonesChange={setShowBones}
-          />
-          <AnatomyView
-            view={view}
-            placements={placements}
-            structures={STRUCTURE_BY_ID}
-            depth={depth}
-            selectedId={selectedId}
-            hoveredId={hoveredId}
-            pinPoint={probe?.point ?? null}
-            showBones={showBones}
-            registry={registry}
-            onProbe={handleProbe}
-            onHover={setHoveredId}
-            onSelect={handleSelect}
-          />
+        <div className="flex flex-col gap-3">
+          {sideVariants.length > 1 && (
+            <ViewSwitch
+              views={sideVariants}
+              viewId={view.id}
+              onChange={setViewId}
+            />
+          )}
+
+          <div className="flex gap-4">
+            <DepthRail
+              layers={view.layers}
+              depth={depth}
+              probe={probe}
+              showBones={showBones}
+              onDepthChange={setDepth}
+              onShowBonesChange={setShowBones}
+            />
+            <AnatomyView
+              view={view}
+              placements={placements}
+              structures={STRUCTURE_BY_ID}
+              depth={depth}
+              selectedId={selectedId}
+              hoveredId={hoveredId}
+              pinPoint={probe?.point ?? null}
+              showBones={showBones}
+              registry={registry}
+              onProbe={handleProbe}
+              onHover={setHoveredId}
+              onSelect={handleSelect}
+            />
+          </div>
         </div>
 
         <div className="min-w-0">
@@ -269,6 +288,8 @@ export function App() {
           '형태는 일부만 실제 해부 도판을 트레이싱한 것이고 나머지는 모식도입니다. 구조를 선택하면 그 구조의 근거가 표시됩니다.'}
         {summary === 'schematic' &&
           '형태는 모식도입니다. 위치 관계와 층 순서를 보기 위한 것이지 실측 도해가 아닙니다.'}{' '}
+        {view.mirrorOf &&
+          '반대쪽 도해를 좌우 반전해 그린 것이라 좌우 차이는 반영하지 않습니다. '}
         구조를 가리키는 도구이며 증상의 원인을 판단하지 않습니다.
       </footer>
     </div>
