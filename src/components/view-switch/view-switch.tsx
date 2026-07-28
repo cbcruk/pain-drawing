@@ -34,7 +34,7 @@ export function ViewSwitch({ views, viewId, onChange }: ViewSwitchProps) {
               color: active ? 'var(--color-accent)' : 'var(--color-muted)',
             }}
           >
-            {SIDE_LABEL[view.side]}
+            {view.sideLabel ?? SIDE_LABEL[view.side]}
           </button>
         )
       })}

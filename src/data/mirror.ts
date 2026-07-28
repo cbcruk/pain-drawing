@@ -3,6 +3,7 @@ import type { StructureInView, View } from '@/types/anatomy.types'
 interface MirrorOverrides {
   id: string
   label: { ko: string; en: string }
+  sideLabel?: string
 }
 
 /*
@@ -16,6 +17,10 @@ export function mirrorView(source: View, overrides: MirrorOverrides): View {
     ...overrides,
     side: source.side === 'right' ? 'left' : 'right',
     mirrorOf: source.id,
+    edges: source.edges && {
+      left: source.edges.right,
+      right: source.edges.left,
+    },
   }
 }
 

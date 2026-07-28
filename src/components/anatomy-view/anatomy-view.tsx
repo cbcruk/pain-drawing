@@ -9,6 +9,22 @@ import { TISSUE } from '@/data/tissue'
 import type { AnatomyViewProps } from './anatomy-view.types'
 import { shapeStyle, sortForPainting } from './anatomy-view.utils'
 
+/*
+  같은 오른발이라도 발바닥이냐 발등이냐에 따라 내측이 반대 편에 온다. 도해가
+  스스로 방향을 밝히지 않으면 좌우를 뒤집어 읽게 되고, 그게 이 도구가 막으려는
+  오류다. SVG 밖에 두어야 반전 transform에 글자가 딸려 뒤집히지 않는다.
+*/
+function EdgeLabel({ text }: { text: string }) {
+  return (
+    <span
+      className="text-[10px] tracking-[0.16em] whitespace-nowrap"
+      style={{ color: 'var(--color-muted)', writingMode: 'vertical-rl' }}
+    >
+      {text}
+    </span>
+  )
+}
+
 export function AnatomyView({
   view,
   placements,
@@ -66,121 +82,127 @@ export function AnatomyView({
   )
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox={view.viewBox}
-      className="h-auto w-[300px] shrink-0 md:w-[340px]"
-      onClick={handleClick}
-      role="img"
-      aria-label={`${view.label.ko} 도해`}
-    >
-      <g transform={mirror}>
-        <path
-          d={view.outline}
-          fill="var(--color-silhouette)"
-          stroke="var(--color-rule)"
-          strokeWidth="1"
-        />
-        {silhouettePaths.map((d, i) => (
+    <div className="flex shrink-0 items-center gap-1.5">
+      {view.edges && <EdgeLabel text={view.edges.left} />}
+
+      <svg
+        ref={svgRef}
+        viewBox={view.viewBox}
+        className="h-auto w-[300px] md:w-[340px]"
+        onClick={handleClick}
+        role="img"
+        aria-label={`${view.label.ko} 도해`}
+      >
+        <g transform={mirror}>
           <path
-            key={i}
-            d={d}
+            d={view.outline}
             fill="var(--color-silhouette)"
             stroke="var(--color-rule)"
             strokeWidth="1"
           />
-        ))}
-
-        {showBones &&
-          bonePaths.map((d, i) => (
+          {silhouettePaths.map((d, i) => (
             <path
               key={i}
               d={d}
-              fill={TISSUE.bone.fill}
-              opacity="0.28"
-              pointerEvents="none"
+              fill="var(--color-silhouette)"
+              stroke="var(--color-rule)"
+              strokeWidth="1"
             />
           ))}
 
-        {paths.map(({ placement, ds }) => {
-          const structure = structures.get(placement.structureId)
-          if (!structure) return null
+          {showBones &&
+            bonePaths.map((d, i) => (
+              <path
+                key={i}
+                d={d}
+                fill={TISSUE.bone.fill}
+                opacity="0.28"
+                pointerEvents="none"
+              />
+            ))}
 
-          const active = placement.depth === depth
-          const isSelected = placement.structureId === selectedId
-          const isHovered = placement.structureId === hoveredId
+          {paths.map(({ placement, ds }) => {
+            const structure = structures.get(placement.structureId)
+            if (!structure) return null
 
-          const style = shapeStyle({
-            tissue: structure.kind,
-            depth: placement.depth,
-            activeDepth: depth,
-            maxDepth,
-            selected: isSelected,
-            hovered: isHovered,
-          })
+            const active = placement.depth === depth
+            const isSelected = placement.structureId === selectedId
+            const isHovered = placement.structureId === hoveredId
 
-          return (
-            <g
-              key={placement.structureId}
-              pointerEvents={active ? 'auto' : 'none'}
-              aria-hidden={active ? undefined : true}
-              onMouseEnter={() => onHover(placement.structureId)}
-              onMouseLeave={() => onHover(null)}
-            >
-              {ds.map((d, i) => (
-                <path
-                  key={i}
-                  ref={(el) => {
-                    const list = registry.get(placement.structureId) ?? []
-                    list[i] = el
-                    registry.set(placement.structureId, list)
-                  }}
-                  d={d}
-                  className="shape"
-                  tabIndex={active && i === 0 ? 0 : -1}
-                  role={active && i === 0 ? 'button' : undefined}
-                  aria-label={
-                    active && i === 0 ? structure.name.ko.classic : undefined
-                  }
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      onSelect(placement.structureId)
+            const style = shapeStyle({
+              tissue: structure.kind,
+              depth: placement.depth,
+              activeDepth: depth,
+              maxDepth,
+              selected: isSelected,
+              hovered: isHovered,
+            })
+
+            return (
+              <g
+                key={placement.structureId}
+                pointerEvents={active ? 'auto' : 'none'}
+                aria-hidden={active ? undefined : true}
+                onMouseEnter={() => onHover(placement.structureId)}
+                onMouseLeave={() => onHover(null)}
+              >
+                {ds.map((d, i) => (
+                  <path
+                    key={i}
+                    ref={(el) => {
+                      const list = registry.get(placement.structureId) ?? []
+                      list[i] = el
+                      registry.set(placement.structureId, list)
+                    }}
+                    d={d}
+                    className="shape"
+                    tabIndex={active && i === 0 ? 0 : -1}
+                    role={active && i === 0 ? 'button' : undefined}
+                    aria-label={
+                      active && i === 0 ? structure.name.ko.classic : undefined
                     }
-                  }}
-                  fill={style.fill}
-                  fillOpacity={style.fillOpacity}
-                  stroke={style.stroke}
-                  strokeWidth={style.strokeWidth}
-                  strokeOpacity={style.strokeOpacity}
-                  strokeDasharray={style.strokeDasharray}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-            </g>
-          )
-        })}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        onSelect(placement.structureId)
+                      }
+                    }}
+                    fill={style.fill}
+                    fillOpacity={style.fillOpacity}
+                    stroke={style.stroke}
+                    strokeWidth={style.strokeWidth}
+                    strokeOpacity={style.strokeOpacity}
+                    strokeDasharray={style.strokeDasharray}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ))}
+              </g>
+            )
+          })}
 
-        {pinPoint && (
-          <g pointerEvents="none">
-            <circle
-              cx={pinPoint[0]}
-              cy={pinPoint[1]}
-              r="14"
-              fill="none"
-              stroke="var(--color-accent)"
-              strokeWidth="1"
-              strokeOpacity="0.45"
-            />
-            <circle
-              cx={pinPoint[0]}
-              cy={pinPoint[1]}
-              r="3"
-              fill="var(--color-accent)"
-            />
-          </g>
-        )}
-      </g>
-    </svg>
+          {pinPoint && (
+            <g pointerEvents="none">
+              <circle
+                cx={pinPoint[0]}
+                cy={pinPoint[1]}
+                r="14"
+                fill="none"
+                stroke="var(--color-accent)"
+                strokeWidth="1"
+                strokeOpacity="0.45"
+              />
+              <circle
+                cx={pinPoint[0]}
+                cy={pinPoint[1]}
+                r="3"
+                fill="var(--color-accent)"
+              />
+            </g>
+          )}
+        </g>
+      </svg>
+
+      {view.edges && <EdgeLabel text={view.edges.right} />}
+    </div>
   )
 }
