@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react'
 import { shapeToPath, toLocalPoint } from '@/lib/geometry'
 import { TISSUE } from '@/data/tissue'
 import type { AnatomyViewProps } from './anatomy-view.types'
+import { shapeStyle, sortForPainting } from './anatomy-view.utils'
 
 export function AnatomyView({
   view,
@@ -21,11 +22,16 @@ export function AnatomyView({
 
   const paths = useMemo(
     () =>
-      placements.map((placement) => ({
+      sortForPainting(placements, depth).map((placement) => ({
         placement,
         ds: placement.shapes.map(shapeToPath),
       })),
-    [placements],
+    [placements, depth],
+  )
+
+  const maxDepth = useMemo(
+    () => Math.max(...view.layers.map((layer) => layer.depth)),
+    [view.layers],
   )
 
   const silhouettePaths = useMemo(
@@ -93,11 +99,20 @@ export function AnatomyView({
         const isSelected = placement.structureId === selectedId
         const isHovered = placement.structureId === hoveredId
 
+        const style = shapeStyle({
+          tissue: structure.kind,
+          depth: placement.depth,
+          activeDepth: depth,
+          maxDepth,
+          selected: isSelected,
+          hovered: isHovered,
+        })
+
         return (
           <g
             key={placement.structureId}
-            opacity={active ? 1 : 0}
             pointerEvents={active ? 'auto' : 'none'}
+            aria-hidden={active ? undefined : true}
             onMouseEnter={() => onHover(placement.structureId)}
             onMouseLeave={() => onHover(null)}
           >
@@ -112,19 +127,23 @@ export function AnatomyView({
                 d={d}
                 className="shape"
                 tabIndex={active && i === 0 ? 0 : -1}
-                role={i === 0 ? 'button' : undefined}
-                aria-label={i === 0 ? structure.name.ko.classic : undefined}
+                role={active && i === 0 ? 'button' : undefined}
+                aria-label={
+                  active && i === 0 ? structure.name.ko.classic : undefined
+                }
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
                     onSelect(placement.structureId)
                   }
                 }}
-                fill={TISSUE[structure.kind].fill}
-                fillOpacity={isSelected ? 0.95 : isHovered ? 0.8 : 0.62}
-                stroke={isSelected ? 'var(--color-accent)' : 'var(--color-edge)'}
-                strokeWidth={isSelected ? 2 : 0.7}
-                strokeOpacity={isSelected ? 1 : 0.5}
+                fill={style.fill}
+                fillOpacity={style.fillOpacity}
+                stroke={style.stroke}
+                strokeWidth={style.strokeWidth}
+                strokeOpacity={style.strokeOpacity}
+                strokeDasharray={style.strokeDasharray}
+                vectorEffect="non-scaling-stroke"
               />
             ))}
           </g>

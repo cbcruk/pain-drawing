@@ -10,8 +10,9 @@ import { effectiveProvenance } from './reference'
 
 /**
  * structureId → 그 구조가 이 뷰에서 렌더한 SVG element들.
- * 히트테스트가 DOM에 의존하므로 비활성 층도 display:none 대신
- * opacity 0 + pointer-events none으로 렌더된 상태를 유지해야 한다.
+ * 히트테스트가 DOM에 의존하므로 비활성 층도 display:none 없이 렌더된 상태를
+ * 유지해야 한다. isPointInFill은 fill="none"과 pointer-events:none에 영향받지
+ * 않으므로 고스트로 그린 층도 후보로 잡힌다.
  */
 export type ShapeRegistry = Map<string, (SVGGeometryElement | null)[]>
 
