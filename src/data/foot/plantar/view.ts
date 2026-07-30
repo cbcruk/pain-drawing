@@ -1,4 +1,5 @@
 import type { Shape, View } from '@/types/anatomy.types'
+import { mirrorView } from '@/data/mirror'
 
 /*
   좌표는 전부 손으로 찍은 모식도다. landmarks는 그 위에서 잡은 기준점이고,
@@ -42,6 +43,9 @@ export const footPlantarView: View = {
   side: 'right',
   aspect: 'plantar',
   label: { ko: '발바닥 · 오른발', en: 'plantar foot, right' },
+  sideLabel: '오른발',
+  /* 발바닥은 아래에서 본 면이라 오른발 무지가 화면 오른쪽이다. 발등은 반대다 */
+  edges: { left: '바깥쪽 · 외측', right: '안쪽 · 내측' },
   viewBox: '40 130 230 580',
   outline: OUTLINE,
   silhouette: TOES,
@@ -55,10 +59,41 @@ export const footPlantarView: View = {
     'hallux-tip': [237, 148],
   },
   layers: [
-    { depth: 0, ko: '건막', en: 'aponeurosis' },
-    { depth: 1, ko: '1층 · 표층', en: 'first layer' },
-    { depth: 2, ko: '2층', en: 'second layer' },
-    { depth: 3, ko: '3층', en: 'third layer' },
-    { depth: 4, ko: '4층 · 심층', en: 'fourth layer' },
+    {
+      depth: 0,
+      ko: '건막',
+      en: 'aponeurosis',
+      hint: '피부 바로 밑을 감싸는 질긴 막',
+    },
+    {
+      depth: 1,
+      ko: '1층 · 표층',
+      en: 'first layer',
+      hint: '피부에서 첫 번째로 만나는 근육',
+    },
+    {
+      depth: 2,
+      ko: '2층',
+      en: 'second layer',
+      hint: '종아리에서 내려온 힘줄이 지나는 층',
+    },
+    {
+      depth: 3,
+      ko: '3층',
+      en: 'third layer',
+      hint: '엄지·새끼발가락 밑동을 움직이는 근육',
+    },
+    {
+      depth: 4,
+      ko: '4층 · 심층',
+      en: 'fourth layer',
+      hint: '뼈에 바로 붙은 가장 깊은 층',
+    },
   ],
 }
+
+export const footPlantarLeftView: View = mirrorView(footPlantarView, {
+  id: 'foot-plantar-left',
+  label: { ko: '발바닥 · 왼발', en: 'plantar foot, left' },
+  sideLabel: '왼발',
+})

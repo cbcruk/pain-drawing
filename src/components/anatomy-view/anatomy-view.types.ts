@@ -1,5 +1,29 @@
-import type { Pt, Structure, StructureInView, View } from '@/types/anatomy.types'
+import type {
+  Pt,
+  Structure,
+  StructureInView,
+  Tissue,
+  View,
+} from '@/types/anatomy.types'
 import type { ShapeRegistry } from '@/lib/probe'
+
+export interface ShapeStyleInput {
+  tissue: Tissue
+  depth: number
+  activeDepth: number
+  maxDepth: number
+  selected: boolean
+  hovered: boolean
+}
+
+export interface ShapeStyle {
+  fill: string
+  fillOpacity: number
+  stroke: string
+  strokeOpacity: number
+  strokeWidth: number
+  strokeDasharray?: string
+}
 
 export interface AnatomyViewProps {
   view: View

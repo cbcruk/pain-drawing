@@ -1,14 +1,18 @@
 import type { Structure, StructureInView, View } from '@/types/anatomy.types'
 import { footStructures } from './foot/structures'
-import { footPlantarView } from './foot/plantar/view'
+import { footPlantarLeftView, footPlantarView } from './foot/plantar/view'
 import { footPlantarPlacements } from './foot/plantar/placements'
+import { mirrorPlacements } from './mirror'
 
-export const VIEWS: View[] = [footPlantarView]
+export const VIEWS: View[] = [footPlantarView, footPlantarLeftView]
 
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
 export const STRUCTURES: Structure[] = [...footStructures]
 
-export const PLACEMENTS: StructureInView[] = [...footPlantarPlacements]
+export const PLACEMENTS: StructureInView[] = [
+  ...footPlantarPlacements,
+  ...mirrorPlacements(footPlantarPlacements, footPlantarLeftView.id),
+]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
   STRUCTURES.map((s) => [s.id, s]),
@@ -20,6 +24,13 @@ export function getView(viewId: string): View | undefined {
 
 export function getPlacements(viewId: string): StructureInView[] {
   return PLACEMENTS.filter((p) => p.viewId === viewId)
+}
+
+/** 같은 부위·같은 면을 좌우로 본 뷰 — 오른쪽 ↔ 왼쪽 전환의 대상 */
+export function getSideVariants(view: View): View[] {
+  return VIEWS.filter(
+    (v) => v.region === view.region && v.aspect === view.aspect,
+  )
 }
 
 /** 같은 부위·같은 쪽을 다른 면에서 본 뷰 — 발바닥 ↔ 발등 전환의 대상 */

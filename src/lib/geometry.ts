@@ -71,6 +71,22 @@ export function shapeToPath(shape: Shape): string {
     : ribbon(shape.p, shape.w)
 }
 
+function viewBoxMirrorAxis(viewBox: string): number {
+  const [x, , w] = viewBox.split(/[\s,]+/).map(Number)
+
+  return Number.isFinite(x) && Number.isFinite(w) ? 2 * x! + w! : 0
+}
+
+/** viewBox 가로 중심을 축으로 한 반전 — 프레이밍이 그대로 유지된다 */
+export function mirrorTransform(viewBox: string): string {
+  return `matrix(-1 0 0 1 ${round2(viewBoxMirrorAxis(viewBox))} 0)`
+}
+
+/** 반전 뷰에서 찍힌 점을 원본 좌표계로 되돌린다 */
+export function mirrorPoint(point: Pt, viewBox: string): Pt {
+  return [viewBoxMirrorAxis(viewBox) - point[0], point[1]]
+}
+
 /** 화면 좌표를 SVG 로컬 좌표로 변환 */
 export function toLocalPoint(
   svg: SVGSVGElement,

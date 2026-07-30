@@ -19,13 +19,15 @@ pnpm dev
 src/
   types/anatomy.types.ts        스키마 — Structure / StructureInView / View 분리
   lib/
-    geometry.ts                 ribbon() 중심선+폭 → path, 좌표 정규화
+    geometry.ts                 ribbon() 중심선+폭 → path, 좌표 정규화, 좌우 반전
+    color.ts                    조직 색 채도 조절 — 깊이 램프
     probe.ts                    isPointInFill 기반 히트테스트
     reference.ts                내보내기 블록 + URL 상태 직렬화
     registration.ts             참조 이미지 ↔ 뷰 좌표 상사변환 (랜드마크 정합)
     serialize.ts                Structure/StructureInView → 붙여넣기용 TS·JSON
   data/
     index.ts                    조립 + 개발 모드 무결성 검사
+    mirror.ts                   반대쪽 뷰 파생 — 좌표를 복제하지 않는다
     tissue.ts                   조직 유형별 색·라벨
     foot/
       structures.ts             뷰 무관 구조 메타데이터 — 부위 단위로 공유
@@ -33,8 +35,10 @@ src/
         view.ts                 뷰 정의 (윤곽·층·bbox·랜드마크·뼈 참조)
         placements.ts           이 뷰에서의 depth + shapes
   components/
-    anatomy-view/               SVG 도해 + 히트테스트 대상 등록
-    depth-rail/                 층 선택 + 다른 층 후보 표시
+    anatomy-view/               SVG 도해 + 히트테스트 대상 등록, 인접 층 고스트,
+                                내측·외측 가장자리 표시
+    depth-rail/                 층 선택 + 다른 층 후보 표시. 피부→뼈 단면으로 읽힌다
+    view-switch/                오른발 ↔ 왼발 전환
     probe-readout/              한 점 아래 구조를 층별로 나열
     structure-detail/           선택 구조 상세
     reference-export/           블록·URL 복사
@@ -71,7 +75,17 @@ src/
 - **`Structure`는 뷰가 아니라 부위에 속한다.** 그래서 `data/foot/structures.ts`가
   뷰 폴더 밖에 있다. 발바닥·발등이 같은 레코드를 참조한다.
 - **비활성 층을 `display:none`으로 끄지 않는다.** `isPointInFill`은 DOM에 있는
-  element만 판정한다. `opacity: 0` + `pointer-events: none`으로 처리한다.
+  element만 판정한다. 얕은 층은 절단연(점선), 깊은 층은 옅은 채움으로 계속
+  그리고 `pointer-events: none`만 건다. `isPointInFill`은 `fill="none"`과
+  `pointer-events`에 영향받지 않아 고스트로 그린 층도 후보로 잡힌다.
+- **반대쪽은 표시 옵션이 아니라 뷰다.** 좌표가 URL로 나가는 이상 좌우가 상태에
+  없으면 `at=`이 두 곳을 가리키게 된다. 반전 뷰는 원본 좌표를 그대로 쓰고
+  렌더에서만 뒤집으므로, 정규화 좌표가 한 공간에 남아 좌우 지점 이송이 공짜다.
+  대신 독립 트레이싱으로 오해되지 않게 `mirrorOf`가 파생 관계를 남긴다.
+- **화면 좌우가 해부학적으로 어느 쪽인지는 뷰가 직접 말한다(`edges`).** `side`
+  하나로 유도할 수 없다 — 같은 오른발이라도 발바닥은 무지가 화면 오른쪽,
+  발등은 왼쪽이다. 근거는 [refs/README.md](./refs/README.md) "좌우는 어떻게
+  판별했나".
 - 반환은 단일 정답이 아니라 **후보 목록**이다. 표면 한 점 아래에 4~5개가 겹친다.
 
 ## 마일스톤
@@ -91,6 +105,12 @@ src/
   트레이싱했고 나머지는 아직 모식도다. 뷰는 여전히 `fidelity: 'schematic'`이다
   — 윤곽·뼈 참조는 손으로 그린 것이기 때문이다. UI는 이 혼합 상태를 그대로
   말한다(푸터는 "일부만", 구조 상세는 구조별 근거).
+- **왼발 뷰는 오른발에서 파생된 것이다.** 좌표를 따로 뜨지 않았고 트레이싱
+  상태도 오른발과 같다. 내보내기 블록은 `(mirrored)`로, 푸터는 좌우 차이를
+  반영하지 않는다고 말한다.
+- 뷰가 둘이 되면서 **뷰 전환·URL의 `view=`·뷰별 라벨 경로는 이미 돌아간다.**
+  다만 M2.5가 검증하려는 건 그게 아니라 **같은 구조가 뷰마다 다른 depth를 갖는
+  경로**다. 좌우 두 뷰는 depth가 동일하므로 그건 여전히 미검증이다.
 - 정밀도 고지 문구는 데이터가 결정하므로 UI에 하드코딩하지 않는다.
 - `view.landmarks` 4점(종골 후연·제1중족골두·제5중족골 조면·무지 끝)은 모식도
   좌표 위에서 잡은 기준점이다. M1에서 참조 이미지 정합에 쓰고, 트레이싱으로

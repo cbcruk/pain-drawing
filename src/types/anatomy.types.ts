@@ -56,6 +56,8 @@ export interface Layer {
   depth: number
   ko: string
   en: string
+  /** 층 이름은 정확하지만 어렵다. 깊이 레일에서만 쓰는 한국어 풀이. */
+  hint?: string
 }
 
 export interface BBox {
@@ -108,6 +110,21 @@ export interface ViewBase {
   boneRef?: Shape[]
   bbox: BBox
   layers: Layer[]
+
+  /**
+   * 이 뷰가 어느 뷰를 좌우 반전해 만든 것인지. 좌표는 원본 그대로 쓰고
+   * 렌더에서만 뒤집으므로, 반전 뷰가 독립적으로 뜬 좌표로 오해되면 안 된다.
+   */
+  mirrorOf?: string
+
+  /**
+   * 화면 좌우 가장자리가 해부학적으로 어느 쪽인지. 같은 오른발이라도 발바닥과
+   * 발등에서 내측이 반대 편에 오므로 규칙으로 유도하지 않고 뷰가 직접 말한다.
+   */
+  edges?: { left: string; right: string }
+
+  /** 좌우 전환 UI에 쓰는 짧은 이름 — 부위마다 말이 다르다(오른발 / 오른쪽 무릎) */
+  sideLabel?: string
 
   /**
    * 해부학적 기준점 — 이 뷰 좌표계에서의 위치. 참조 이미지를 갈아탈 때

@@ -52,8 +52,11 @@ body {
 .shape {
   cursor: pointer;
   transition:
+    fill 0.18s ease,
     fill-opacity 0.18s ease,
-    stroke 0.18s ease;
+    stroke 0.18s ease,
+    stroke-opacity 0.18s ease,
+    stroke-width 0.18s ease;
 }
 
 :focus-visible {
