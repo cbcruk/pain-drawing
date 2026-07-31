@@ -4,6 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  /*
+    상대 경로로 빌드한다. GitHub Pages는 프로젝트 사이트라
+    `/pain-drawing/` 하위에 놓이는데, 저장소 이름을 base에 박아두면 포크나
+    커스텀 도메인에서 깨진다. HTML이 전부 루트 한 단계에 있어 상대 경로로 충분하다.
+  */
+  base: './',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

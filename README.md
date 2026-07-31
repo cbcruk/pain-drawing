@@ -13,6 +13,20 @@ pnpm dev
 - `/` — 지시 도구 (제품)
 - `/author.html` — 좌표 저작 도구 (M1). 별도 엔트리라 제품 번들에 섞이지 않는다.
 
+## 배포
+
+`main`에 푸시하면 `.github/workflows/deploy.yml`이 GitHub Pages로 올린다
+(`pnpm lint` → `pnpm build` → 업로드). `tsc -b`가 build에 포함되므로 타입 오류는
+배포를 막는다.
+
+한 번은 손으로 켜야 한다: **Settings → Pages → Source를 "GitHub Actions"로**.
+
+빌드는 `base: './'`라 저장소 이름이 어디에도 박혀 있지 않다. 프로젝트 사이트
+(`/pain-drawing/`), 포크, 커스텀 도메인에서 모두 그대로 동작한다.
+
+`refs/`의 도판은 배포물에 들어가지 않는다 — 어떤 코드도 import하지 않고
+`public/`이 아니라 `dist/`에 복사되지 않는다.
+
 ## 구조
 
 ```
