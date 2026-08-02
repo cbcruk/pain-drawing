@@ -136,12 +136,20 @@ export function CalibrationPanel({
               {registration.flip && ' · 좌우 반전 적용'}
             </div>
           )}
+
+          {registration?.reflectionAmbiguous && calibrated && (
+            <div className="mt-1.5 text-[12px]" style={{ color: 'var(--color-mark)' }}>
+              기준점이 2개라 <strong>좌우 반전을 데이터가 정하지 못했습니다.</strong>{' '}
+              rms 0은 정합이 맞다는 뜻이 아닙니다 — 정방향과 거울상이 똑같이
+              맞습니다. 도해가 뒤집혀 보이면 기준점을 하나 더 찍으세요.
+            </div>
+          )}
         </div>
 
         <Hint>
-          기준점은 2개부터 변환이 잡히고, 3개 이상이면 최소제곱으로 맞춥니다.
+          기준점 2개면 변환이 잡히지만 좌우 반전은 3개부터 갈립니다. 상사변환은
+          자유도가 4라 점 2개는 어느 방향으로든 정확히 통과하기 때문입니다.
           비등방 스케일은 쓰지 않으므로 종횡비가 안 맞는 참조는 rms로 드러납니다.
-          반전 여부는 잔차가 작은 쪽으로 자동 선택됩니다.
         </Hint>
 
         <div className="grid grid-cols-1 gap-2">
