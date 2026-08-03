@@ -4,6 +4,7 @@ import {
   DEFAULT_VIEW_ID,
   STRUCTURE_BY_ID,
   getPlacements,
+  getAspectVariants,
   getSideVariants,
   getView,
 } from '@/data'
@@ -32,6 +33,7 @@ export function App() {
   const view = getView(viewId) ?? initialView
   const placements = useMemo(() => getPlacements(view.id), [view.id])
   const sideVariants = useMemo(() => getSideVariants(view), [view])
+  const aspectVariants = useMemo(() => getAspectVariants(view), [view])
 
   const [depth, setDepth] = useState(initial.depth ?? 1)
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -42,6 +44,30 @@ export function App() {
   const [showBones, setShowBones] = useState(true)
 
   const registry = useRef<ShapeRegistry>(new Map()).current
+
+  /*
+    면을 바꾸면(발바닥 ↔ 발등) 다른 구조가 놓인 다른 공간이다. 층 수도 다르고
+    (발바닥 5, 발등 4) 층 번호의 뜻도 다르므로, 선택과 지시 지점을 들고 가면
+    엉뚱한 것을 가리키게 된다. 좌우 전환은 같은 좌표계라 그대로 유지한다.
+  */
+  const previousAspect = useRef(view.aspect)
+
+  useEffect(() => {
+    if (previousAspect.current === view.aspect) return
+    previousAspect.current = view.aspect
+
+    setProbe(null)
+    setSelectedId(null)
+    setHoveredId(null)
+    registry.clear()
+  }, [view.aspect, registry])
+
+  // 층 번호는 뷰마다 범위가 다르다. 없는 층에 머무르면 아무것도 안 보인다
+  useEffect(() => {
+    if (view.layers.some((l) => l.depth === depth)) return
+
+    setDepth(view.layers[view.layers.length - 1]?.depth ?? 0)
+  }, [view, depth])
 
   const depthOf = useCallback(
     (structureId: string): number | undefined =>
@@ -173,13 +199,23 @@ export function App() {
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
-          {sideVariants.length > 1 && (
-            <ViewSwitch
-              views={sideVariants}
-              viewId={view.id}
-              onChange={setViewId}
-            />
-          )}
+          <div className="flex flex-wrap gap-2">
+            {sideVariants.length > 1 && (
+              <ViewSwitch
+                views={sideVariants}
+                viewId={view.id}
+                onChange={setViewId}
+              />
+            )}
+            {aspectVariants.length > 1 && (
+              <ViewSwitch
+                views={aspectVariants}
+                viewId={view.id}
+                onChange={setViewId}
+                axis="aspect"
+              />
+            )}
+          </div>
 
           <div className="flex gap-4">
             <DepthRail

@@ -2,9 +2,16 @@ import type { Structure, StructureInView, View } from '@/types/anatomy.types'
 import { footStructures } from './foot/structures'
 import { footPlantarLeftView, footPlantarView } from './foot/plantar/view'
 import { footPlantarPlacements } from './foot/plantar/placements'
+import { footDorsalLeftView, footDorsalView } from './foot/dorsal/view'
+import { footDorsalPlacements } from './foot/dorsal/placements'
 import { mirrorPlacements } from './mirror'
 
-export const VIEWS: View[] = [footPlantarView, footPlantarLeftView]
+export const VIEWS: View[] = [
+  footPlantarView,
+  footPlantarLeftView,
+  footDorsalView,
+  footDorsalLeftView,
+]
 
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
 export const STRUCTURES: Structure[] = [...footStructures]
@@ -12,6 +19,8 @@ export const STRUCTURES: Structure[] = [...footStructures]
 export const PLACEMENTS: StructureInView[] = [
   ...footPlantarPlacements,
   ...mirrorPlacements(footPlantarPlacements, footPlantarLeftView.id),
+  ...footDorsalPlacements,
+  ...mirrorPlacements(footDorsalPlacements, footDorsalLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
@@ -34,10 +43,8 @@ export function getSideVariants(view: View): View[] {
 }
 
 /** 같은 부위·같은 쪽을 다른 면에서 본 뷰 — 발바닥 ↔ 발등 전환의 대상 */
-export function getSiblingViews(view: View): View[] {
-  return VIEWS.filter(
-    (v) => v.id !== view.id && v.region === view.region && v.side === view.side,
-  )
+export function getAspectVariants(view: View): View[] {
+  return VIEWS.filter((v) => v.region === view.region && v.side === view.side)
 }
 
 export const DEFAULT_VIEW_ID = footPlantarView.id
@@ -45,8 +52,11 @@ export const DEFAULT_VIEW_ID = footPlantarView.id
 /*
   뷰가 둘 이상이 되면 structureId 오타는 예외가 아니라 "조용히 안 그려지는"
   형태로 나타난다. 개발 중에만 확인하고 번들에는 남기지 않는다.
+
+  옵셔널 체이닝인 이유: 이 모듈을 Vite 밖(스크립트·검사용 node)에서 불러올 때
+  import.meta.env가 아예 없다. 데이터만 읽으러 온 호출자를 죽일 이유가 없다.
 */
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   const problems: string[] = []
 
   const seenStructure = new Set<string>()
