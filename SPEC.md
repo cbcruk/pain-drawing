@@ -61,8 +61,11 @@ type Shape =
 그래서 둘로 쪼갠다.
 
 ```ts
-type Tissue =
-  'muscle' | 'tendon' | 'ligament' | 'fascia' | 'nerve' | 'vessel' | 'bone'
+// 조직 종류는 색 구분이 아니라 **서술 형태의 판별자**다 (아래 "인대 스키마")
+type DirectionalTissue = 'muscle' | 'tendon' | 'nerve' | 'vessel' | 'bone'
+type AnchoredTissue = 'ligament' | 'cartilage'
+type AmbivalentTissue = 'fascia'
+type Tissue = DirectionalTissue | AnchoredTissue | AmbivalentTissue
 
 // 뷰와 무관한 구조 정보 — 하나만 존재
 interface Structure {
@@ -72,20 +75,19 @@ interface Structure {
     en: string
     la: string
   }
-  kind: Tissue
-
-  // 근육/힘줄용
-  origin?: string
-  insertion?: string
-  action?: string
-  nerve?: string
-
-  // 인대용 — origin/insertion이 아니라 부착부 2개
-  attachments?: [string, string]
-
+  action?: string           // 조직과 무관하게 물을 수 있다
   commonIssues?: string[]   // 참고용, 진단 아님
   fmaId?: string            // 온톨로지 연결 지점 (옵션)
 }
+
+// kind가 서술 형태를 고른다. 셋 중 하나여야 하고 섞을 수 없다
+type Structure = StructureBase & (
+  | { kind: DirectionalTissue } & { origin?: string; insertion?: string
+                                    nerve?: string; attachments?: never }
+  | { kind: AnchoredTissue }    & { attachments: [string, string]
+                                    origin?: never; insertion?: never; nerve?: never }
+  | { kind: AmbivalentTissue }  & (위 둘 중 하나)
+)
 
 // 특정 뷰에서 그 구조가 어떻게 보이는가 — 뷰마다 하나씩
 interface StructureInView {
@@ -126,8 +128,30 @@ interface View {
 부위에 있습니다"는 정직하고 유용한 정보다. 견갑하근을 밖에서 누를 수 있다고
 믿게 하는 것보다 낫다.
 
-인대는 `origin/insertion`이 아니라 `attachments: [뼈A, 뼈B]`를 쓴다. 근육과
-스키마가 다르다는 걸 타입으로 강제한다.
+발에서는 이게 한 번도 false가 아니어서 검증되지 않았고, 어깨 몫으로 미뤄뒀었다.
+**무릎에서 먼저 쓰였다** — 십자인대·횡인대·슬와근건·후방인대는 관절 안이라
+지시한 점 아래에 있는 건 맞지만 밖에서 누를 수 없다. 어깨의 부담이 하나 줄었다.
+
+### 인대 스키마 — M3에서 실제로 강제하게 고쳤다
+
+인대는 `origin/insertion`이 아니라 `attachments`를 쓴다. 근육과 스키마가 다르다는
+걸 **타입으로 강제한다**. M2.5까지는 이게 선언일 뿐이었다 — `attachments?:
+[string, string]`가 옵셔널로 얹혀 있어서 인대에 기시/정지를 적어도, 근육에
+부착부를 적어도 통과했다. 지금은 위 유니온이 넷 다 컴파일 오류로 막는다.
+
+무릎이 그 과정에서 세 가지를 바꿔놓았다.
+
+- **`attachments`는 `[뼈A, 뼈B]`가 아니다.** 반월판은 두 부착부가 모두 경골이고,
+  슬개하 횡인대는 뼈가 아니라 반월판 둘을 잇는다. 부착 **대상**은 제한하지 않고
+  개수만 2로 고정한다.
+- **인대 전용도 아니다.** 반월판은 연골인데 인대와 같은 서술이 필요하다. 판별
+  기준은 조직 이름이 아니라 "당기는 방향이 있는가"다.
+- **조직 하나는 양쪽 다 된다.** 족저건막은 종골에서 나와 발가락으로 퍼지므로
+  방향이 있고, 관절낭은 관절을 빙 둘러 걸쳐 있을 뿐이라 없다. 둘 다 근막이다.
+  그래서 `fascia`만 두 형태를 모두 허용하고, 나머지는 한쪽으로 고정한다.
+
+`iliotibial-tract`가 반대 방향의 시험이다. 이름에 "인대"가 붙지만 근막이고 위쪽
+끝이 근육에서 나오므로 기시/정지가 맞다. 이름으로 갈랐다면 틀렸을 것이다.
 
 ## 히트테스트
 
@@ -316,6 +340,28 @@ depth가 갈린다. `fibularis-longus-tendon` · `tibialis-posterior-tendon`도 
   가는가"가 주 질문이 되므로 역방향 조회(M2)가 발바닥보다 더 쓸모 있다.
 - `reachable`은 발등에서도 검증되지 않는다(거의 전부 true). 그건 어깨 몫이다.
 
+## 무릎 뷰 — 인대 변수를 격리하는 카드 (완료)
+
+발등이 다중 뷰를 먼저 통과시켜준 덕에 무릎에 남은 변수는 인대 하나였다. 결과는
+위 "인대 스키마" 절에 적었다 — 요약하면 **선언이 강제가 아니었다는 게 드러났고,
+강제하려고 보니 판별 기준이 조직 이름이 아니었다.**
+
+부수적으로 얻은 것 둘:
+
+- **`reachable: false`가 처음 쓰였다.** 어깨까지 갈 필요가 없었다.
+- **`boneRef`가 뷰마다 다를 수 있다는 게 드러났다.** 슬개골과 경골조면은 앞에서만
+  보인다. 뒤 뷰 기하는 앞 뷰의 좌우 반전이지만 이 둘은 빼야 했다. 뼈 참조가
+  region이 아니라 View의 속성인 이유가 여기서 생겼다.
+
+`pcl`은 앞에서 L3, 뒤에서 L2다. 발등의 `dorsal-interossei`가 **다른 층 체계**
+때문에 갈렸다면 이건 **같은 체계에서 보는 방향만으로** 순서가 뒤집힌 사례다.
+
+부위가 둘이 되면서 **부위 전환 UI**가 필요해졌다(`REGIONS`). 그 전까지는
+`View.region`이 데이터에만 있고 화면에는 없었다 — 무릎을 넣어도 URL로만 닿을 수
+있었을 것이다.
+
+좌표는 전부 모식도다. `refs/`에 무릎 도판이 없다.
+
 ## 마일스톤
 
 1. **M0 — 스키마 + ribbon 렌더러**: 위 타입 정의, `ribbon()`,
@@ -326,8 +372,11 @@ depth가 갈린다. `fibularis-longus-tendon` · `tibialis-posterior-tendon`도 
 4. **M2.5 — 발등으로 다중 뷰 검증**: 같은 Structure가 뷰마다 다른 depth를
    갖는 경로, 뷰 전환 UI, 지점 이송. 변수는 "뷰가 둘" 하나뿐이다.
 5. **M3 — 무릎으로 검증**: 인대가 주인공인 부위. `attachments` 스키마가
-   실제로 버티는지 확인. **어깨보다 먼저 무릎.**
+   실제로 버티는지 확인. **어깨보다 먼저 무릎.** → 안 버텼다. 옵셔널 필드라
+   아무것도 강제하지 않았고, 유니온으로 고쳤다. 위 "무릎 뷰" 절.
 6. (이후) 어깨 — 다중 뷰 + reachable. 무릎이 통과한 다음에만.
+   `reachable`은 무릎이 이미 써버렸으므로 남는 변수는 "같은 구조가 뷰에 따라
+   도달 가능↔불가로 갈리는가"다.
 
 검증 순서를 지킬 것. 어깨는 새 변수를 한꺼번에 도입해서, 거기서 실패하면 어느
 가정이 깨졌는지 모른다. 발등은 변수 하나(다중 뷰), 무릎은 그 다음 하나(인대)만

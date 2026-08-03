@@ -7,6 +7,7 @@ import type {
   Tissue,
   TraceSource,
 } from '@/types/anatomy.types'
+import { usesAttachments } from '@/data/tissue'
 
 /**
  * 편집 중 도형. circle도 p[0]/w[0]을 쓴다 — 선택·드래그 코드를 리본과
@@ -34,6 +35,8 @@ export interface Draft {
   nerve: string
   attachA: string
   attachB: string
+  /** 근막일 때만 의미가 있다 — 관절낭처럼 방향 없는 근막인가 */
+  anchored: boolean
   notes: string
   commonIssues: string
   fmaId: string
@@ -68,6 +71,7 @@ export function emptyDraft(depth: number): Draft {
     nerve: '',
     attachA: '',
     attachB: '',
+    anchored: false,
     notes: '',
     commonIssues: '',
     fmaId: '',
@@ -104,6 +108,14 @@ export function draftShapes(draft: Draft): Shape[] {
   return draft.shapes.map(toShape).filter((s): s is Shape => s !== null)
 }
 
+/**
+ * 이 초안을 부착부 2개로 적을 것인가. 인대·연골은 스키마가 강제하고, 근막만
+ * 저작자가 고른다 — 족저건막은 방향이 있고 관절낭은 없기 때문이다.
+ */
+export function draftIsAnchored(draft: Draft): boolean {
+  return usesAttachments(draft.kind) || (draft.kind === 'fascia' && draft.anchored)
+}
+
 /** 내보낼 수 없는 이유들 — 비어 있으면 완성된 것이다 */
 export function draftProblems(draft: Draft): string[] {
   const problems: string[] = []
@@ -120,11 +132,17 @@ export function draftProblems(draft: Draft): string[] {
     problems.push('도형이 없다 (리본은 점 2개 이상)')
   }
 
+  // 부착부는 하나만 채우면 스키마가 성립하지 않는다 — 2개가 곧 형태다
+  if (draftIsAnchored(draft) && !(draft.attachA.trim() && draft.attachB.trim())) {
+    problems.push('부착부 2개를 모두 채워야 한다')
+  }
+
   return problems
 }
 
+/** 조직 종류가 정하는 두 서술 형태 중 하나로 좁혀서 내보낸다 */
 export function toStructure(draft: Draft): Structure {
-  const structure: Structure = {
+  const common = {
     id: draft.structureId.trim(),
     name: {
       ko: draft.koRevised.trim()
@@ -133,26 +151,57 @@ export function toStructure(draft: Draft): Structure {
       en: draft.en.trim(),
       la: draft.la.trim(),
     },
-    kind: draft.kind,
+    ...optional({ action: draft.action, fmaId: draft.fmaId }),
+    ...listed(draft),
   }
 
-  if (draft.origin.trim()) structure.origin = draft.origin.trim()
-  if (draft.insertion.trim()) structure.insertion = draft.insertion.trim()
-  if (draft.action.trim()) structure.action = draft.action.trim()
-  if (draft.nerve.trim()) structure.nerve = draft.nerve.trim()
-  if (draft.fmaId.trim()) structure.fmaId = draft.fmaId.trim()
+  const attachments: [string, string] = [
+    draft.attachA.trim(),
+    draft.attachB.trim(),
+  ]
+  const directional = optional({
+    origin: draft.origin,
+    insertion: draft.insertion,
+    nerve: draft.nerve,
+  })
 
-  if (draft.attachA.trim() && draft.attachB.trim()) {
-    structure.attachments = [draft.attachA.trim(), draft.attachB.trim()]
+  if (draft.kind === 'ligament' || draft.kind === 'cartilage') {
+    return { ...common, kind: draft.kind, attachments }
   }
 
+  if (draft.kind === 'fascia') {
+    return draft.anchored
+      ? { ...common, kind: 'fascia', attachments }
+      : { ...common, kind: 'fascia', ...directional }
+  }
+
+  return { ...common, kind: draft.kind, ...directional }
+}
+
+function optional<K extends string>(
+  fields: Record<K, string>,
+): Partial<Record<K, string>> {
+  const out: Partial<Record<K, string>> = {}
+
+  for (const key of Object.keys(fields) as K[]) {
+    const value = fields[key].trim()
+    if (value) out[key] = value
+  }
+
+  return out
+}
+
+function listed(draft: Draft): {
+  notes?: string[]
+  commonIssues?: string[]
+} {
   const notes = lines(draft.notes)
-  if (notes.length) structure.notes = notes
-
   const issues = lines(draft.commonIssues)
-  if (issues.length) structure.commonIssues = issues
 
-  return structure
+  return {
+    ...(notes.length ? { notes } : {}),
+    ...(issues.length ? { commonIssues: issues } : {}),
+  }
 }
 
 /**
@@ -194,6 +243,7 @@ export function fromExisting(
     nerve: structure.nerve ?? '',
     attachA: structure.attachments?.[0] ?? '',
     attachB: structure.attachments?.[1] ?? '',
+    anchored: structure.attachments !== undefined,
     notes: (structure.notes ?? []).join('\n'),
     commonIssues: (structure.commonIssues ?? []).join('\n'),
     fmaId: structure.fmaId ?? '',
