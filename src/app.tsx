@@ -2,8 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Probe, Pt } from '@/types/anatomy.types'
 import {
   DEFAULT_VIEW_ID,
+  REGIONS,
   STRUCTURE_BY_ID,
   getPlacements,
+  getAspectVariants,
+  getRegionEntry,
   getSideVariants,
   getView,
 } from '@/data'
@@ -22,6 +25,7 @@ import { ProbeReadout } from '@/components/probe-readout/probe-readout'
 import { StructureDetail } from '@/components/structure-detail/structure-detail'
 import { ReferenceExport } from '@/components/reference-export/reference-export'
 import { ViewSwitch } from '@/components/view-switch/view-switch'
+import { RegionSwitch } from '@/components/region-switch/region-switch'
 
 const initial = parseSearch(window.location.search)
 const initialView = getView(initial.viewId ?? DEFAULT_VIEW_ID) ?? getView(DEFAULT_VIEW_ID)!
@@ -32,6 +36,7 @@ export function App() {
   const view = getView(viewId) ?? initialView
   const placements = useMemo(() => getPlacements(view.id), [view.id])
   const sideVariants = useMemo(() => getSideVariants(view), [view])
+  const aspectVariants = useMemo(() => getAspectVariants(view), [view])
 
   const [depth, setDepth] = useState(initial.depth ?? 1)
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -42,6 +47,31 @@ export function App() {
   const [showBones, setShowBones] = useState(true)
 
   const registry = useRef<ShapeRegistry>(new Map()).current
+
+  /*
+    면이나 부위를 바꾸면 다른 구조가 놓인 다른 공간이다. 층 수도 층 번호의 뜻도
+    다르므로, 선택과 지시 지점을 들고 가면 엉뚱한 것을 가리키게 된다.
+    좌우 전환만 같은 좌표계라 그대로 유지한다.
+  */
+  const previousFace = useRef(`${view.region}/${view.aspect}`)
+
+  useEffect(() => {
+    const face = `${view.region}/${view.aspect}`
+    if (previousFace.current === face) return
+    previousFace.current = face
+
+    setProbe(null)
+    setSelectedId(null)
+    setHoveredId(null)
+    registry.clear()
+  }, [view.region, view.aspect, registry])
+
+  // 층 번호는 뷰마다 범위가 다르다. 없는 층에 머무르면 아무것도 안 보인다
+  useEffect(() => {
+    if (view.layers.some((l) => l.depth === depth)) return
+
+    setDepth(view.layers[view.layers.length - 1]?.depth ?? 0)
+  }, [view, depth])
 
   const depthOf = useCallback(
     (structureId: string): number | undefined =>
@@ -65,6 +95,14 @@ export function App() {
       setSelectedId(pick ? pick.structure.id : null)
     },
     [runProbe, depth],
+  )
+
+  const handleRegionChange = useCallback(
+    (regionId: string) => {
+      const entry = getRegionEntry(regionId, view.side)
+      if (entry) setViewId(entry.id)
+    },
+    [view.side],
   )
 
   const handleSelect = useCallback(
@@ -173,13 +211,30 @@ export function App() {
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
-          {sideVariants.length > 1 && (
-            <ViewSwitch
-              views={sideVariants}
-              viewId={view.id}
-              onChange={setViewId}
-            />
-          )}
+          <div className="flex flex-wrap gap-2">
+            {REGIONS.length > 1 && (
+              <RegionSwitch
+                regions={REGIONS}
+                regionId={view.region}
+                onChange={handleRegionChange}
+              />
+            )}
+            {sideVariants.length > 1 && (
+              <ViewSwitch
+                views={sideVariants}
+                viewId={view.id}
+                onChange={setViewId}
+              />
+            )}
+            {aspectVariants.length > 1 && (
+              <ViewSwitch
+                views={aspectVariants}
+                viewId={view.id}
+                onChange={setViewId}
+                axis="aspect"
+              />
+            )}
+          </div>
 
           <div className="flex gap-4">
             <DepthRail

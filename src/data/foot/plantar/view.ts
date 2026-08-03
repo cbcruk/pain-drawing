@@ -63,6 +63,7 @@ export const footPlantarView: View = {
   aspect: 'plantar',
   label: { ko: '발바닥 · 오른발', en: 'plantar foot, right' },
   sideLabel: '오른발',
+  aspectLabel: '발바닥',
   /* 발바닥은 아래에서 본 면이라 오른발 무지가 화면 오른쪽이다. 발등은 반대다 */
   edges: { left: '바깥쪽 · 외측', right: '안쪽 · 내측' },
   viewBox: '40 130 230 580',

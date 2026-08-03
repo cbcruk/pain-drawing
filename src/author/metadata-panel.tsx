@@ -1,6 +1,7 @@
 import type { Tissue, View } from '@/types/anatomy.types'
-import { TISSUE } from '@/data/tissue'
+import { TISSUE, usesAttachments } from '@/data/tissue'
 import type { Draft } from './draft'
+import { draftIsAnchored } from './draft'
 import { Field, Hint, Panel, TextArea } from './ui'
 
 interface MetadataPanelProps {
@@ -26,7 +27,8 @@ export function MetadataPanel({ draft, view, onChange }: MetadataPanelProps) {
     )
   }
 
-  const isLigament = draft.kind === 'ligament'
+  const anchored = draftIsAnchored(draft)
+  const forced = usesAttachments(draft.kind)
 
   return (
     <Panel title="3 · 메타데이터">
@@ -137,7 +139,24 @@ export function MetadataPanel({ draft, view, onChange }: MetadataPanelProps) {
           </label>
         </div>
 
-        {isLigament ? (
+        {/*
+          근막만 저작자가 고른다. 족저건막은 종골에서 나와 발가락으로 퍼지므로
+          방향이 있고, 관절낭은 관절을 둘러 걸쳐 있을 뿐이라 없다.
+        */}
+        {draft.kind === 'fascia' && (
+          <label className="flex items-center gap-2 text-[12px]">
+            <input
+              type="checkbox"
+              checked={draft.anchored}
+              onChange={(event) => onChange({ anchored: event.target.checked })}
+            />
+            <span style={{ color: 'var(--color-dim)' }}>
+              방향 없는 근막 (관절낭처럼 부착부 2개로 적는다)
+            </span>
+          </label>
+        )}
+
+        {anchored ? (
           <div className="grid grid-cols-2 gap-2">
             <Field
               label="부착부 A"
@@ -179,9 +198,11 @@ export function MetadataPanel({ draft, view, onChange }: MetadataPanelProps) {
           </>
         )}
 
-        {isLigament && (
+        {anchored && (
           <Hint>
-            인대는 기시/정지가 아니라 부착부 2개를 씁니다. 근육과 스키마가 다릅니다.
+            {forced
+              ? '인대·연골은 기시/정지가 아니라 부착부 2개를 씁니다. 스키마가 다르고, 타입이 강제합니다.'
+              : '부착부 2개로 내보냅니다. 순서에 뜻은 없고, 부착 대상이 뼈가 아니어도 됩니다.'}
           </Hint>
         )}
 

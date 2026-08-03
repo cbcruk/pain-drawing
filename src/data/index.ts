@@ -1,17 +1,49 @@
-import type { Structure, StructureInView, View } from '@/types/anatomy.types'
+import type {
+  Region,
+  Structure,
+  StructureInView,
+  View,
+} from '@/types/anatomy.types'
 import { footStructures } from './foot/structures'
 import { footPlantarLeftView, footPlantarView } from './foot/plantar/view'
 import { footPlantarPlacements } from './foot/plantar/placements'
+import { footDorsalLeftView, footDorsalView } from './foot/dorsal/view'
+import { footDorsalPlacements } from './foot/dorsal/placements'
+import { kneeStructures } from './knee/structures'
+import { kneeAnteriorLeftView, kneeAnteriorView } from './knee/anterior/view'
+import { kneeAnteriorPlacements } from './knee/anterior/placements'
+import { kneePosteriorLeftView, kneePosteriorView } from './knee/posterior/view'
+import { kneePosteriorPlacements } from './knee/posterior/placements'
 import { mirrorPlacements } from './mirror'
 
-export const VIEWS: View[] = [footPlantarView, footPlantarLeftView]
+export const VIEWS: View[] = [
+  footPlantarView,
+  footPlantarLeftView,
+  footDorsalView,
+  footDorsalLeftView,
+  kneeAnteriorView,
+  kneeAnteriorLeftView,
+  kneePosteriorView,
+  kneePosteriorLeftView,
+]
+
+export const REGIONS: Region[] = [
+  { id: 'foot', ko: '발', en: 'foot', defaultViewId: footPlantarView.id },
+  { id: 'knee', ko: '무릎', en: 'knee', defaultViewId: kneeAnteriorView.id },
+]
 
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
-export const STRUCTURES: Structure[] = [...footStructures]
+export const STRUCTURES: Structure[] = [...footStructures, ...kneeStructures]
 
 export const PLACEMENTS: StructureInView[] = [
   ...footPlantarPlacements,
   ...mirrorPlacements(footPlantarPlacements, footPlantarLeftView.id),
+  ...footDorsalPlacements,
+  ...mirrorPlacements(footDorsalPlacements, footDorsalLeftView.id),
+  ...kneeAnteriorPlacements,
+  ...mirrorPlacements(kneeAnteriorPlacements, kneeAnteriorLeftView.id),
+  ...kneePosteriorPlacements,
+  ...mirrorPlacements(kneePosteriorPlacements, kneePosteriorLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
@@ -34,9 +66,31 @@ export function getSideVariants(view: View): View[] {
 }
 
 /** 같은 부위·같은 쪽을 다른 면에서 본 뷰 — 발바닥 ↔ 발등 전환의 대상 */
-export function getSiblingViews(view: View): View[] {
-  return VIEWS.filter(
-    (v) => v.id !== view.id && v.region === view.region && v.side === view.side,
+export function getAspectVariants(view: View): View[] {
+  return VIEWS.filter((v) => v.region === view.region && v.side === view.side)
+}
+
+/**
+ * 부위를 바꿀 때 들어갈 뷰. 그 부위의 기본 면으로 가되 **좌우는 유지한다** —
+ * 왼발을 보다가 무릎으로 넘어가면 왼쪽 무릎이어야지 오른쪽일 이유가 없다.
+ */
+export function getRegionEntry(
+  regionId: string,
+  side: View['side'],
+): View | undefined {
+  const region = REGIONS.find((r) => r.id === regionId)
+  if (!region) return undefined
+
+  const fallback = getView(region.defaultViewId)
+  if (!fallback) return undefined
+
+  return (
+    VIEWS.find(
+      (v) =>
+        v.region === regionId &&
+        v.aspect === fallback.aspect &&
+        v.side === side,
+    ) ?? fallback
   )
 }
 
@@ -45,8 +99,11 @@ export const DEFAULT_VIEW_ID = footPlantarView.id
 /*
   뷰가 둘 이상이 되면 structureId 오타는 예외가 아니라 "조용히 안 그려지는"
   형태로 나타난다. 개발 중에만 확인하고 번들에는 남기지 않는다.
+
+  옵셔널 체이닝인 이유: 이 모듈을 Vite 밖(스크립트·검사용 node)에서 불러올 때
+  import.meta.env가 아예 없다. 데이터만 읽으러 온 호출자를 죽일 이유가 없다.
 */
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   const problems: string[] = []
 
   const seenStructure = new Set<string>()
@@ -59,6 +116,19 @@ if (import.meta.env.DEV) {
   for (const v of VIEWS) {
     if (seenView.has(v.id)) problems.push(`중복 view id: ${v.id}`)
     seenView.add(v.id)
+  }
+
+  const regionIds = new Set(REGIONS.map((r) => r.id))
+  for (const r of REGIONS) {
+    if (!seenView.has(r.defaultViewId)) {
+      problems.push(`없는 defaultViewId: ${r.id} → ${r.defaultViewId}`)
+    }
+  }
+  for (const v of VIEWS) {
+    // 부위 목록에 없는 뷰는 UI에서 도달할 수 없다 — 조용히 사라지는 실수다
+    if (!regionIds.has(v.region)) {
+      problems.push(`REGIONS에 없는 region: ${v.id} → ${v.region}`)
+    }
   }
 
   const seenPlacement = new Set<string>()
