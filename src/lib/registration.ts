@@ -24,7 +24,17 @@ export interface Registration {
   /** 잔차 RMS (뷰 좌표 단위) — 정합 품질 */
   rms: number
   count: number
+  /**
+   * flip을 데이터로 정하지 못했다는 표시. 대응점이 2개면 정방향과 거울상이
+   * **둘 다 rms 0으로 완전히 맞는다** — 상사변환의 자유도가 4라 점 2개(식 4개)를
+   * 어느 방향으로든 정확히 통과시킬 수 있기 때문이다. 이때 자동 선택은
+   * 근거가 아니라 동전 던지기이므로, rms만 보고 정합됐다고 믿으면 안 된다.
+   */
+  reflectionAmbiguous: boolean
 }
+
+/** 두 해의 잔차 차이가 이보다 작으면 데이터가 방향을 못 가른 것으로 본다 */
+const REFLECTION_EPS = 1e-6
 
 function centroid(points: Pt[]): Pt {
   let x = 0
@@ -68,7 +78,16 @@ function fitOriented(pairs: Correspondence[], flip: boolean): Registration | nul
   const tx = tc[0] - (a * fc[0] - b * fc[1])
   const ty = tc[1] - (b * fc[0] + a * fc[1])
 
-  const draft: Registration = { a, b, tx, ty, flip, rms: 0, count: pairs.length }
+  const draft: Registration = {
+    a,
+    b,
+    tx,
+    ty,
+    flip,
+    rms: 0,
+    count: pairs.length,
+    reflectionAmbiguous: false,
+  }
 
   let sq = 0
   for (const c of pairs) {
@@ -80,11 +99,20 @@ function fitOriented(pairs: Correspondence[], flip: boolean): Registration | nul
 }
 
 /**
- * 대응점 2쌍 이상으로 변환을 구한다. 반전 여부는 사용자가 고르지 않고
- * 잔차가 작은 쪽을 고른다 — 반대쪽 발 사진을 올렸는지는 데이터가 안다.
+ * 대응점 2쌍 이상으로 변환을 구한다. 반전 여부는 잔차가 작은 쪽으로 정한다 —
+ * 반대쪽 발 사진을 올렸는지는 대개 데이터가 안다.
+ *
+ * 단, **기준점 3개부터**다. 2개면 두 방향이 똑같이 완벽하게 맞아서 데이터가
+ * 방향을 말해주지 않으므로 `reflectionAmbiguous`를 세운다. 자료의 좌우를
+ * 이미 아는 호출자는 `reflect`로 직접 지정할 수 있다.
  */
-export function fitRegistration(pairs: Correspondence[]): Registration | null {
+export function fitRegistration(
+  pairs: Correspondence[],
+  reflect?: boolean,
+): Registration | null {
   if (pairs.length < 2) return null
+
+  if (reflect !== undefined) return fitOriented(pairs, reflect)
 
   const plain = fitOriented(pairs, false)
   const mirrored = fitOriented(pairs, true)
@@ -92,7 +120,11 @@ export function fitRegistration(pairs: Correspondence[]): Registration | null {
   if (!plain) return mirrored
   if (!mirrored) return plain
 
-  return mirrored.rms < plain.rms ? mirrored : plain
+  const chosen = mirrored.rms < plain.rms ? mirrored : plain
+  const undecided =
+    pairs.length < 3 || Math.abs(plain.rms - mirrored.rms) < REFLECTION_EPS
+
+  return { ...chosen, reflectionAmbiguous: undecided }
 }
 
 export function applyRegistration(reg: Registration, point: Pt): Pt {
@@ -145,6 +177,7 @@ export function fitToViewBox(
     flip: false,
     rms: 0,
     count: 0,
+    reflectionAmbiguous: false,
   }
 }
 
