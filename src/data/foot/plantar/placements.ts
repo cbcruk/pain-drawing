@@ -35,6 +35,18 @@ const GRAY_444: TraceSource = {
   tracedAt: '2026-08',
 }
 
+/*
+  Gray445(3층)는 종골 정점 (225, 10)과 무지 끝 (62, 782)으로 배율 0.6957 ·
+  회전 177.2°. 이 도판은 다섯 구조가 전부 이름표로 표시돼 있어 식별이 확실하다
+  — FLEXOR HALLUCIS BREVIS, ADDUCTOR HALLUCIS (OBLIQUE/TRANS. HEAD),
+  FLEXOR DIG. QUINTI BREVIS, Sesamoid bones.
+*/
+const GRAY_445: TraceSource = {
+  ref: "Gray's Anatomy 1918, Fig. 445 (sole, third layer)",
+  license: 'Public domain',
+  tracedAt: '2026-08',
+}
+
 export const footPlantarPlacements: StructureInView[] = [
   {
     structureId: 'pa-medial',
@@ -238,11 +250,13 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 3,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_445,
     shapes: [
       {
         t: 'ribbon',
-        p: [[172, 422], [196, 372], [214, 322], [228, 288]],
-        w: [20, 26, 26, 18],
+        p: [[189.02, 419.92], [197.57, 381.19], [207.51, 342.39], [218.15, 303.56], [224.96, 271.88]],
+        w: [38.26, 52.18, 55.66, 48.7, 34.79],
       },
     ],
   },
@@ -251,9 +265,11 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 3,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_445,
     shapes: [
-      { t: 'circle', c: [237, 280], r: 7.5 },
-      { t: 'circle', c: [220, 290], r: 7.5 },
+      { t: 'circle', c: [246.78, 262.45], r: 12.52 },
+      { t: 'circle', c: [224.44, 261.46], r: 11.83 },
     ],
   },
   {
@@ -261,11 +277,13 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 3,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_445,
     shapes: [
       {
         t: 'ribbon',
-        p: [[134, 402], [164, 352], [194, 312], [214, 292]],
-        w: [24, 26, 22, 14],
+        p: [[131.48, 454.08], [143.34, 411.7], [155.37, 372.8], [167.39, 333.91], [175.94, 295.18]],
+        w: [41.74, 59.14, 62.61, 59.14, 41.74],
       },
     ],
   },
@@ -274,11 +292,13 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 3,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_445,
     shapes: [
       {
         t: 'ribbon',
-        p: [[96, 292], [140, 282], [180, 280], [212, 288]],
-        w: [12, 13, 13, 12],
+        p: [[78.36, 322.24], [108.59, 313.8], [140.05, 301.81], [167.27, 288.64], [182.21, 280.94]],
+        w: [19.48, 22.26, 22.26, 20.87, 18.09],
       },
     ],
   },
@@ -287,8 +307,14 @@ export const footPlantarPlacements: StructureInView[] = [
     viewId: VIEW_ID,
     depth: 3,
     reachable: true,
+    fidelity: 'traced',
+    source: GRAY_445,
     shapes: [
-      { t: 'ribbon', p: [[84, 396], [80, 350], [80, 302]], w: [18, 18, 13] },
+      {
+        t: 'ribbon',
+        p: [[84.86, 454.97], [78.37, 407.92], [76.86, 362.72], [79.68, 320.79]],
+        w: [30.61, 33.39, 32, 26.44],
+      },
     ],
   },
 
