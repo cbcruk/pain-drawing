@@ -14,6 +14,7 @@ import { kneeAnteriorLeftView, kneeAnteriorView } from './knee/anterior/view'
 import { kneeAnteriorPlacements } from './knee/anterior/placements'
 import { kneePosteriorLeftView, kneePosteriorView } from './knee/posterior/view'
 import { kneePosteriorPlacements } from './knee/posterior/placements'
+import { normalize, scoreStructure } from '@/lib/search'
 import { mirrorPlacements } from './mirror'
 
 export const VIEWS: View[] = [
@@ -78,6 +79,87 @@ export function getView(viewId: string): View | undefined {
 
 export function getPlacements(viewId: string): StructureInView[] {
   return PLACEMENTS.filter((p) => p.viewId === viewId)
+}
+
+const HIDDEN = new Set(REGIONS.filter((r) => r.hidden).map((r) => r.id))
+
+/** 감춘 부위의 뷰는 역방향 조회에도 나오면 안 된다 — 화면에서 뺀 뜻이 없어진다 */
+export function isViewVisible(view: View): boolean {
+  return !HIDDEN.has(view.region)
+}
+
+/** 이 구조가 어느 뷰의 몇 층에 있는가 */
+export interface StructureLocation {
+  view: View
+  depth: number
+  reachable: boolean
+}
+
+export function getLocations(structureId: string): StructureLocation[] {
+  const out: StructureLocation[] = []
+
+  for (const placement of PLACEMENTS) {
+    if (placement.structureId !== structureId) continue
+
+    const view = getView(placement.viewId)
+    if (!view || !isViewVisible(view)) continue
+
+    out.push({ view, depth: placement.depth, reachable: placement.reachable })
+  }
+
+  return out
+}
+
+export interface SearchHit {
+  structure: Structure
+  locations: StructureLocation[]
+}
+
+/**
+ * 이름 → 위치. probe의 반대 방향이다.
+ *
+ * 어디에도 놓이지 않은 구조는 결과에서 뺀다 — 이름은 있는데 짚어줄 자리가
+ * 없으면 위치 도구로서 할 말이 없다.
+ */
+export function searchStructures(query: string, limit = 12): SearchHit[] {
+  const needle = normalize(query)
+  if (!needle) return []
+
+  const scored: [number, SearchHit][] = []
+
+  for (const structure of STRUCTURES) {
+    const score = scoreStructure(needle, structure)
+    if (score === null) continue
+
+    const locations = getLocations(structure.id)
+    if (locations.length === 0) continue
+
+    scored.push([score, { structure, locations }])
+  }
+
+  return scored
+    .sort((a, b) => b[0] - a[0])
+    .slice(0, limit)
+    .map(([, hit]) => hit)
+}
+
+/**
+ * 이 구조를 보려면 어느 뷰로 가야 하는가. 지금 뷰에 있으면 그대로 두고,
+ * 없으면 **같은 쪽(좌우)을 먼저** 찾는다 — 이름을 눌렀다고 반대쪽 발로
+ * 건너뛰면 사용자가 보던 발이 바뀐다.
+ */
+export function pickLocation(
+  locations: StructureLocation[],
+  current: View,
+): StructureLocation | undefined {
+  return (
+    locations.find((l) => l.view.id === current.id) ??
+    locations.find(
+      (l) => l.view.region === current.region && l.view.side === current.side,
+    ) ??
+    locations.find((l) => l.view.region === current.region) ??
+    locations[0]
+  )
 }
 
 /** 같은 부위·같은 면을 좌우로 본 뷰 — 오른쪽 ↔ 왼쪽 전환의 대상 */

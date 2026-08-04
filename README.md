@@ -37,6 +37,7 @@ src/
     color.ts                    조직 색 채도 조절 — 깊이 램프
     probe.ts                    isPointInFill 기반 히트테스트
     reference.ts                내보내기 블록 + URL 상태 직렬화
+    search.ts                   이름 네 벌(한글 전통·개정·영문·라틴어) 점수 매칭
     registration.ts             참조 이미지 ↔ 뷰 좌표 상사변환 (랜드마크 정합).
                                 자세가 다른 자료는 분절별로 — fitSegmented·applyAcross
     serialize.ts                Structure/StructureInView → 붙여넣기용 TS·JSON
@@ -63,6 +64,7 @@ src/
     region-switch/              발 ↔ 무릎 전환. 좌우는 유지한다
     view-switch/                오른발 ↔ 왼발, 발바닥 ↔ 발등 전환
     probe-readout/              한 점 아래 구조를 층별로 나열
+    structure-search/           이름 → 위치. 여러 뷰에 있으면 전부 제시한다
     structure-detail/           선택 구조 상세
     reference-export/           블록·URL 복사
   author/                       저작 도구 (별도 엔트리)
@@ -126,6 +128,9 @@ src/
   발등은 왼쪽이다. 근거는 [refs/README.md](./refs/README.md) "좌우는 어떻게
   판별했나".
 - 반환은 단일 정답이 아니라 **후보 목록**이다. 표면 한 점 아래에 4~5개가 겹친다.
+- **역방향 조회는 지시 지점을 만들지 않는다.** 이름으로 찾으면 뷰·층을 옮기고
+  선택만 한다. 없는 좌표를 지어내면 사용자가 짚지도 않은 곳이 `at=`으로 URL에
+  남는다. 대신 면을 건너뛸 때 선택은 들고 간다 — 안 그러면 옮겨간 이유가 사라진다.
 
 ## 마일스톤
 
@@ -133,7 +138,8 @@ src/
 - [x] **M1** 저작 도구 — 정합·중심선 편집·메타데이터·내보내기 동작.
       **인수 테스트(발바닥 재트레이싱)는 아직 실행 안 됨.** 참조 자료는
       Gray's 1918 족저 층별 도판(PD)으로 정했다 — SPEC "주의 1 — 자료 선택"
-- [ ] **M2** 발바닥 뷰 완성 — 역방향 조회(이름 → 위치) 미구현
+- [x] **M2** 발바닥 뷰 완성 — 역방향 조회(이름 → 위치) 포함. 네 가지 이름 어느
+      것으로도 찾히고, 여러 뷰에 걸친 구조는 뷰마다 층을 함께 보여준다
 - [x] **M2.5** 발등으로 다중 뷰 검증 — `dorsal-interossei`가 발바닥 L4 ↔ 발등 L3로
       갈리며 `Structure`/`StructureInView` 분리가 처음 검증됐다
 - [x] **M3** 무릎으로 검증 — `attachments`는 **버티지 못했다**. 옵셔널 필드라
