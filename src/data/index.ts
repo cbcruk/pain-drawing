@@ -14,6 +14,17 @@ import { kneeAnteriorLeftView, kneeAnteriorView } from './knee/anterior/view'
 import { kneeAnteriorPlacements } from './knee/anterior/placements'
 import { kneePosteriorLeftView, kneePosteriorView } from './knee/posterior/view'
 import { kneePosteriorPlacements } from './knee/posterior/placements'
+import { lowerLegStructures } from './lower-leg/structures'
+import {
+  lowerLegPosteriorLeftView,
+  lowerLegPosteriorView,
+} from './lower-leg/posterior/view'
+import { lowerLegPosteriorPlacements } from './lower-leg/posterior/placements'
+import {
+  lowerLegLateralLeftView,
+  lowerLegLateralView,
+} from './lower-leg/lateral/view'
+import { lowerLegLateralPlacements } from './lower-leg/lateral/placements'
 import { normalize, scoreStructure } from '@/lib/search'
 import { mirrorPlacements } from './mirror'
 
@@ -26,6 +37,10 @@ export const VIEWS: View[] = [
   kneeAnteriorLeftView,
   kneePosteriorView,
   kneePosteriorLeftView,
+  lowerLegPosteriorView,
+  lowerLegPosteriorLeftView,
+  lowerLegLateralView,
+  lowerLegLateralLeftView,
 ]
 
 /*
@@ -50,13 +65,23 @@ export const REGIONS: Region[] = [
     defaultViewId: kneeAnteriorView.id,
     hidden: true,
   },
+  {
+    id: 'lower-leg',
+    ko: '종아리',
+    en: 'lower leg',
+    defaultViewId: lowerLegPosteriorView.id,
+  },
 ]
 
 /** 부위 전환에 실제로 나오는 것 */
 export const VISIBLE_REGIONS: Region[] = REGIONS.filter((r) => !r.hidden)
 
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
-export const STRUCTURES: Structure[] = [...footStructures, ...kneeStructures]
+export const STRUCTURES: Structure[] = [
+  ...footStructures,
+  ...kneeStructures,
+  ...lowerLegStructures,
+]
 
 export const PLACEMENTS: StructureInView[] = [
   ...footPlantarPlacements,
@@ -67,6 +92,10 @@ export const PLACEMENTS: StructureInView[] = [
   ...mirrorPlacements(kneeAnteriorPlacements, kneeAnteriorLeftView.id),
   ...kneePosteriorPlacements,
   ...mirrorPlacements(kneePosteriorPlacements, kneePosteriorLeftView.id),
+  ...lowerLegPosteriorPlacements,
+  ...mirrorPlacements(lowerLegPosteriorPlacements, lowerLegPosteriorLeftView.id),
+  ...lowerLegLateralPlacements,
+  ...mirrorPlacements(lowerLegLateralPlacements, lowerLegLateralLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
