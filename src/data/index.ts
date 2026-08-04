@@ -27,10 +27,32 @@ export const VIEWS: View[] = [
   kneePosteriorLeftView,
 ]
 
+/*
+  무릎은 **감춰 둔다**. M3의 목적은 `attachments` 스키마 검증이었고 그건
+  끝났지만(옵셔널 필드라 아무것도 강제하지 않는다는 걸 찾아냈다), 부위 자체가
+  이 도구의 전제와 맞지 않는다.
+
+  전제는 "손가락의 대체재"다 — 눌러서 만져지는 것을 가리킨다. 발바닥은 층을
+  파고들어도 그 전제가 유지된다. 눌린 힘이 건막에서 4층까지 실제로 전달된다.
+  무릎은 아니다. 십자인대·반월판은 지목한 점 아래에 있는 게 맞지만 눌러도
+  닿지 않는다. `reachable: false`가 각 항목에 붙긴 해도, 깊이 레일이라는 장치
+  자체가 "계속 내려가 보라"고 권한다.
+
+  데이터는 남긴다. 스키마 검증의 증거이고 URL로는 열린다.
+*/
 export const REGIONS: Region[] = [
   { id: 'foot', ko: '발', en: 'foot', defaultViewId: footPlantarView.id },
-  { id: 'knee', ko: '무릎', en: 'knee', defaultViewId: kneeAnteriorView.id },
+  {
+    id: 'knee',
+    ko: '무릎',
+    en: 'knee',
+    defaultViewId: kneeAnteriorView.id,
+    hidden: true,
+  },
 ]
+
+/** 부위 전환에 실제로 나오는 것 */
+export const VISIBLE_REGIONS: Region[] = REGIONS.filter((r) => !r.hidden)
 
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
 export const STRUCTURES: Structure[] = [...footStructures, ...kneeStructures]

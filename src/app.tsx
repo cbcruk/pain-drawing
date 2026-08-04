@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Probe, Pt } from '@/types/anatomy.types'
 import {
   DEFAULT_VIEW_ID,
-  REGIONS,
+  VISIBLE_REGIONS,
   STRUCTURE_BY_ID,
   getPlacements,
   getAspectVariants,
@@ -212,9 +212,9 @@ export function App() {
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
-            {REGIONS.length > 1 && (
+            {VISIBLE_REGIONS.length > 1 && (
               <RegionSwitch
-                regions={REGIONS}
+                regions={VISIBLE_REGIONS}
                 regionId={view.region}
                 onChange={handleRegionChange}
               />
