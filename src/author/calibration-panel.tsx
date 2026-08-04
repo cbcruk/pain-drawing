@@ -1,10 +1,18 @@
 import type { View } from '@/types/anatomy.types'
-import { rmsVerdict, type Registration } from '@/lib/registration'
+import {
+  rmsVerdict,
+  type Registration,
+  type SegmentedRegistration,
+} from '@/lib/registration'
 import type { LandmarkPick } from './storage'
 import { Button, Field, Hint, Panel } from './ui'
 
 interface CalibrationPanelProps {
   view: View
+  /** 지금 정합 중인 분절. 분절이 없는 뷰에서는 null */
+  segmentId: string | null
+  segmented: SegmentedRegistration
+  onSegment: (id: string) => void
   imageName: string | null
   registration: Registration | null
   calibrated: boolean
@@ -27,6 +35,9 @@ interface CalibrationPanelProps {
 
 export function CalibrationPanel({
   view,
+  segmentId,
+  segmented,
+  onSegment,
   imageName,
   registration,
   calibrated,
@@ -42,7 +53,11 @@ export function CalibrationPanel({
   onResetPicks,
   onSource,
 }: CalibrationPanelProps) {
-  const total = Object.keys(view.landmarks ?? {}).length
+  const segments = view.segments
+  const active = segments?.find((s) => s.id === segmentId)
+  const all = Object.keys(view.landmarks ?? {})
+  const total = (active ? active.landmarks.filter((k) => all.includes(k)) : all)
+    .length
   const diagonal = Math.hypot(view.bbox.w, view.bbox.h)
 
   return (
@@ -58,6 +73,57 @@ export function CalibrationPanel({
       }
     >
       <div className="flex flex-col gap-3">
+        {/*
+          자세가 바뀌는 관절에서는 자료 한 장이 뷰 전체에 얹히지 않는다.
+          뼈마다 따로 맞추고, 지금 맞춘 뼈의 자리에 이미지가 놓인다.
+        */}
+        {segments && (
+          <div className="flex flex-col gap-1.5">
+            <span
+              className="font-mono text-[10px] tracking-[0.12em] uppercase"
+              style={{ color: 'var(--color-muted)' }}
+            >
+              분절
+            </span>
+            <div
+              className="flex w-fit border"
+              style={{ borderColor: 'var(--color-rule)' }}
+              role="group"
+              aria-label="분절 전환"
+            >
+              {segments.map((segment) => {
+                const on = segment.id === segmentId
+                const reg = segmented.bySegment[segment.id]
+
+                return (
+                  <button
+                    key={segment.id}
+                    type="button"
+                    onClick={() => onSegment(segment.id)}
+                    aria-pressed={on}
+                    className="px-3 py-1.5 text-[12px] transition-colors"
+                    style={{
+                      background: on ? 'var(--color-accent-wash)' : 'transparent',
+                      color: on ? 'var(--color-accent)' : 'var(--color-muted)',
+                    }}
+                  >
+                    {segment.ko}
+                    <span className="ml-1.5 font-mono text-[10px]">
+                      {reg ? `rms ${reg.rms.toFixed(1)}` : '미정합'}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <Hint>
+              뼈 하나 안에서는 자료와 뷰가 여전히 닮은 도형입니다. 관절을 건너는
+              구조(십자인대·측부인대)는 도형 패널에서 <strong>걸침</strong>을
+              지정하면 양 끝 부착부가 각자의 뼈에 붙고 사이는 보간됩니다 —
+              그 구간은 트레이싱이 아니라 재구성입니다.
+            </Hint>
+          </div>
+        )}
+
         <label className="flex flex-col gap-1">
           <span
             className="font-mono text-[10px] tracking-[0.12em] uppercase"

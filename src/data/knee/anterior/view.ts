@@ -55,11 +55,46 @@ export const kneeAnteriorView: View = {
   fidelity: 'schematic',
   landmarks: {
     'patella-center': [160, 252],
-    'tibial-tuberosity': [162, 372],
     'medial-epicondyle': [222, 262],
     'lateral-epicondyle': [98, 262],
+    'intercondylar-notch': [160, 250],
+    'tibial-eminence': [160, 312],
+    'tibial-plateau-medial': [216, 318],
+    'tibial-plateau-lateral': [104, 318],
+    'tibial-tuberosity': [162, 372],
     'fibular-head': [104, 342],
   },
+  /*
+    관절 내부가 보이는 도판은 무릎을 굽힌 자세라 편 무릎인 이 뷰와 상사변환으로
+    이어지지 않는다. 뼈 하나 안에서는 이어지므로 뼈마다 따로 정합한다.
+
+    비골은 경골과 별개의 뼈지만 굽힘에서 경골과 함께 움직이므로 같은 분절이다.
+    슬개골은 어느 쪽도 아니다 — 대퇴사두근건 안에 들어 굽힘에 따라 대퇴골 위를
+    미끄러진다. 그래서 `patella-center`는 랜드마크로는 남아 있어도(표층 도판
+    정합에 쓴다) 어느 분절에도 속하지 않는다.
+  */
+  segments: [
+    {
+      id: 'femur',
+      ko: '대퇴골',
+      landmarks: [
+        'medial-epicondyle',
+        'lateral-epicondyle',
+        'intercondylar-notch',
+      ],
+    },
+    {
+      id: 'tibia',
+      ko: '경골 · 비골',
+      landmarks: [
+        'tibial-eminence',
+        'tibial-plateau-medial',
+        'tibial-plateau-lateral',
+        'tibial-tuberosity',
+        'fibular-head',
+      ],
+    },
+  ],
   /*
     발바닥의 1~4층과 달리 여기 층은 "무엇을 걷어내야 다음이 보이는가"다.
     지대와 슬개골을 젖히면 관절낭, 관절낭을 열면 반월판, 반월판 사이로

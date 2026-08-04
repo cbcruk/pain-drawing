@@ -1,8 +1,11 @@
+import type { Segment } from '@/types/anatomy.types'
 import { DEFAULT_WIDTH, type Draft, type DraftShape } from './draft'
 import { Button, Hint, Panel } from './ui'
 
 interface ShapePanelProps {
   draft: Draft | null
+  /** 뷰가 강체 분절로 나뉘면 도형이 관절을 건널 수 있다 */
+  segments: Segment[] | null
   activeShapeKey: string | null
   selectedPoint: number | null
   canUndo: boolean
@@ -13,8 +16,12 @@ interface ShapePanelProps {
   onWidth: (index: number, width: number) => void
   onWidthAll: (width: number) => void
   onDeletePoint: (index: number) => void
+  onSpan: (span: [string, string] | undefined) => void
   onUndo: () => void
 }
+
+const segmentName = (segments: Segment[] | null, id: string): string =>
+  segments?.find((s) => s.id === id)?.ko ?? id
 
 const shapeLabel = (shape: DraftShape): string =>
   shape.t === 'circle'
@@ -23,6 +30,7 @@ const shapeLabel = (shape: DraftShape): string =>
 
 export function ShapePanel({
   draft,
+  segments,
   activeShapeKey,
   selectedPoint,
   canUndo,
@@ -33,6 +41,7 @@ export function ShapePanel({
   onWidth,
   onWidthAll,
   onDeletePoint,
+  onSpan,
   onUndo,
 }: ShapePanelProps) {
   const shape = draft?.shapes.find((s) => s.key === activeShapeKey) ?? null
@@ -83,6 +92,55 @@ export function ShapePanel({
               <Button onClick={() => onDeleteShape(shape.key)}>도형 삭제</Button>
             )}
           </div>
+
+          {/*
+            관절을 건너는 도형. 출발 분절의 변환 아래에서 그리고, 내보낼 때
+            도착 쪽 끝이 그 뼈로 옮겨간다. 첫 점이 출발, 마지막 점이 도착이다.
+          */}
+          {shape && shape.t === 'ribbon' && segments && segments.length > 1 && (
+            <label className="flex flex-col gap-1">
+              <span
+                className="font-mono text-[10px] tracking-[0.12em] uppercase"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                걸침
+              </span>
+              <select
+                value={shape.span ? shape.span.join('>') : ''}
+                onChange={(event) => {
+                  const [from, to] = event.target.value.split('>')
+                  onSpan(from && to ? [from, to] : undefined)
+                }}
+                className="border px-2 py-1 text-[12.5px]"
+                style={{
+                  borderColor: 'var(--color-rule)',
+                  background: 'var(--color-paper)',
+                  color: 'var(--color-ink)',
+                }}
+              >
+                <option value="">한 분절 안에 있다 (그린 그대로)</option>
+                {segments.flatMap((a) =>
+                  segments
+                    .filter((b) => b.id !== a.id)
+                    .map((b) => (
+                      <option key={`${a.id}>${b.id}`} value={`${a.id}>${b.id}`}>
+                        {a.ko} → {b.ko}
+                      </option>
+                    )),
+                )}
+              </select>
+              {shape.span && (
+                <Hint>
+                  첫 점이 <strong>{segmentName(segments, shape.span[0])}</strong>{' '}
+                  쪽 부착부, 마지막 점이{' '}
+                  <strong>{segmentName(segments, shape.span[1])}</strong>{' '}
+                  쪽입니다. 양 끝은 정확하고
+                  사이는 보간 — 그리는 동안은 원래 자리에, 선택을 풀면 옮겨간
+                  자리에 그려집니다.
+                </Hint>
+              )}
+            </label>
+          )}
 
           {shape && (
             <>

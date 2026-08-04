@@ -18,7 +18,18 @@ export interface DraftShape {
   t: 'ribbon' | 'circle'
   p: Pt[]
   w: number[]
+  /**
+   * 관절을 건너는 도형 — [출발 분절, 도착 분절].
+   *
+   * 화면에서는 출발 분절의 변환 아래에서 그린다. 첫 점이 출발 쪽 부착부,
+   * 마지막 점이 도착 쪽 부착부다. **점 순서가 곧 방향이다.** 내보낼 때
+   * 도착 쪽 끝이 그 뼈의 변환으로 옮겨가고 사이는 보간된다.
+   */
+  span?: [string, string]
 }
+
+/** 걸친 도형을 실제 좌표로 푸는 함수 — 정합 정보를 아는 쪽이 넘겨준다 */
+export type SpanResolver = (points: Pt[], span: [string, string]) => Pt[]
 
 /** 폼 입력은 전부 문자열로 들고 있다가 내보낼 때만 스키마로 좁힌다 */
 export interface Draft {
@@ -87,11 +98,12 @@ const lines = (text: string): string[] =>
     .map((l) => l.trim())
     .filter(Boolean)
 
-function toShape(shape: DraftShape): Shape | null {
+function toShape(shape: DraftShape, resolve?: SpanResolver): Shape | null {
   if (shape.t === 'circle') {
     const c = shape.p[0]
     if (!c) return null
 
+    // 원은 점 하나라 두 분절에 걸칠 수 없다 — 걸치려면 길이가 있어야 한다
     return { t: 'circle', c, r: shape.w[0] ?? DEFAULT_WIDTH / 2 }
   }
 
@@ -99,13 +111,15 @@ function toShape(shape: DraftShape): Shape | null {
 
   return {
     t: 'ribbon',
-    p: shape.p,
+    p: shape.span && resolve ? resolve(shape.p, shape.span) : shape.p,
     w: shape.p.map((_, i) => shape.w[i] ?? DEFAULT_WIDTH),
   }
 }
 
-export function draftShapes(draft: Draft): Shape[] {
-  return draft.shapes.map(toShape).filter((s): s is Shape => s !== null)
+export function draftShapes(draft: Draft, resolve?: SpanResolver): Shape[] {
+  return draft.shapes
+    .map((s) => toShape(s, resolve))
+    .filter((s): s is Shape => s !== null)
 }
 
 /**
@@ -212,13 +226,14 @@ export function toPlacement(
   draft: Draft,
   viewId: string,
   source?: TraceSource,
+  resolve?: SpanResolver,
 ): StructureInView {
   const base: StructureInViewBase = {
     structureId: draft.structureId.trim(),
     viewId,
     depth: draft.depth,
     reachable: draft.reachable,
-    shapes: draftShapes(draft),
+    shapes: draftShapes(draft, resolve),
   }
 
   return source ? { ...base, fidelity: 'traced', source } : base

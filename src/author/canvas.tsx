@@ -4,7 +4,7 @@ import { shapeToPath, toLocalPoint } from '@/lib/geometry'
 import { parseViewBox, registrationMatrix } from '@/lib/registration'
 import type { Registration } from '@/lib/registration'
 import { TISSUE } from '@/data/tissue'
-import { draftShapes, type Draft } from './draft'
+import { draftShapes, type Draft, type SpanResolver } from './draft'
 
 export interface LandmarkTarget {
   key: string
@@ -28,6 +28,8 @@ interface CanvasProps {
   activeShapeKey: string | null
   selectedPoint: number | null
   landmarks: LandmarkTarget[]
+  /** 걸친 도형을 실제 좌표로 푼다. 그리는 중인 구조는 그대로 두고 나머지에만 쓴다 */
+  resolveSpan?: SpanResolver
   onPick: (point: Pt) => void
   onMovePoint: (index: number, point: Pt) => void
   onSelectPoint: (index: number) => void
@@ -48,6 +50,7 @@ export function Canvas({
   activeShapeKey,
   selectedPoint,
   landmarks,
+  resolveSpan,
   onPick,
   onMovePoint,
   onSelectPoint,
@@ -172,7 +175,7 @@ export function Canvas({
         {drafts
           .filter((d) => d.key !== activeDraft?.key)
           .map((draft) =>
-            draftShapes(draft).map((shape, i) => (
+            draftShapes(draft, resolveSpan).map((shape, i) => (
               <path
                 key={`${draft.key}-${i}`}
                 d={shapeToPath(shape)}
