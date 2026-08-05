@@ -25,6 +25,11 @@ import {
   lowerLegLateralView,
 } from './lower-leg/lateral/view'
 import { lowerLegLateralPlacements } from './lower-leg/lateral/placements'
+import {
+  lowerLegMedialLeftView,
+  lowerLegMedialView,
+} from './lower-leg/medial/view'
+import { lowerLegMedialPlacements } from './lower-leg/medial/placements'
 import { normalize, scoreStructure } from '@/lib/search'
 import { mirrorPlacements } from './mirror'
 
@@ -41,6 +46,8 @@ export const VIEWS: View[] = [
   lowerLegPosteriorLeftView,
   lowerLegLateralView,
   lowerLegLateralLeftView,
+  lowerLegMedialView,
+  lowerLegMedialLeftView,
 ]
 
 /*
@@ -96,6 +103,8 @@ export const PLACEMENTS: StructureInView[] = [
   ...mirrorPlacements(lowerLegPosteriorPlacements, lowerLegPosteriorLeftView.id),
   ...lowerLegLateralPlacements,
   ...mirrorPlacements(lowerLegLateralPlacements, lowerLegLateralLeftView.id),
+  ...lowerLegMedialPlacements,
+  ...mirrorPlacements(lowerLegMedialPlacements, lowerLegMedialLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(

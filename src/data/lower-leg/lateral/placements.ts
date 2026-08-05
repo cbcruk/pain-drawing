@@ -25,6 +25,21 @@ export const lowerLegLateralPlacements: StructureInView[] = [
   },
 
   {
+    structureId: 'fibular-retinaculum',
+    viewId: VIEW_ID,
+    depth: 0,
+    reachable: true,
+    shapes: [
+      // 바깥 복사뼈 뒤에서 종골로 — 비골근건이 감아 도는 자리를 눌러 준다
+      {
+        t: 'ribbon',
+        p: [[200, 578], [206, 606], [204, 634]],
+        w: [30, 32, 28],
+      },
+    ],
+  },
+
+  {
     structureId: 'tibialis-anterior',
     viewId: VIEW_ID,
     depth: 1,

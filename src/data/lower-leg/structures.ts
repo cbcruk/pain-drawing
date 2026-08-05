@@ -199,6 +199,60 @@ export const lowerLegStructures: Structure[] = [
   },
 
   {
+    id: 'flexor-retinaculum',
+    name: {
+      ko: { classic: '굴근지대', revised: '굽힘근지지띠' },
+      en: 'flexor retinaculum of the ankle',
+      la: 'retinaculum musculorum flexorum',
+    },
+    kind: 'fascia',
+    /* 복사뼈와 종골 사이에 걸친 띠 — 당기는 방향이 없으므로 부착부 2개 */
+    attachments: ['안쪽 복사뼈', '종골 내측면'],
+    action: '힘줄과 신경·혈관이 발목 안쪽에서 뜨지 않게 눌러 준다',
+    notes: [
+      '이 띠와 뼈 사이가 족근관이다. 안쪽에서 뒤로 후경골건 · 장지굴근건 · 후경골동맥 · 경골신경 · 장무지굴근건 순으로 지난다',
+    ],
+    commonIssues: ['족근관증후군에서 발바닥 저림과 함께 이 구간이 언급된다'],
+  },
+  {
+    id: 'fibular-retinaculum',
+    name: {
+      ko: { classic: '비골근지대', revised: '종아리근지지띠' },
+      en: 'fibular (peroneal) retinacula',
+      la: 'retinacula musculorum fibularium',
+    },
+    kind: 'fascia',
+    attachments: ['바깥 복사뼈 뒤', '종골 외측면'],
+    action: '비골근건이 복사뼈를 감아 돌 때 튀어나오지 않게 잡는다',
+    commonIssues: ['비골건 아탈구·탈구에서 이 띠의 손상이 함께 언급된다'],
+  },
+  {
+    id: 'great-saphenous-vein',
+    name: {
+      ko: { classic: '대복재정맥', revised: '큰두렁정맥' },
+      en: 'great saphenous vein',
+      la: 'vena saphena magna',
+    },
+    kind: 'vessel',
+    origin: '발등 정맥활 내측',
+    insertion: '안쪽 복사뼈 앞을 지나 넓적다리 안쪽으로 올라간다',
+    action: '다리 표층 정맥혈의 주 통로',
+    notes: ['안쪽 복사뼈 바로 앞에서 피부 밑으로 지나 눈으로도 보이는 일이 많다'],
+  },
+  {
+    id: 'saphenous-nerve',
+    name: {
+      ko: { classic: '복재신경', revised: '두렁신경' },
+      en: 'saphenous nerve',
+      la: 'nervus saphenus',
+    },
+    kind: 'nerve',
+    origin: '대퇴신경의 가지',
+    insertion: '종아리 안쪽을 따라 내려가 발 내측 피부',
+    action: '감각만 — 종아리와 발 안쪽 피부',
+    notes: ['대복재정맥과 나란히 간다. 정맥 시술에서 함께 언급되는 이유다'],
+  },
+  {
     id: 'tibial-nerve',
     name: {
       ko: { classic: '경골신경', revised: '정강신경' },
