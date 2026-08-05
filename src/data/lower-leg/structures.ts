@@ -199,6 +199,51 @@ export const lowerLegStructures: Structure[] = [
   },
 
   {
+    id: 'extensor-hallucis-longus',
+    name: {
+      ko: { classic: '장무지신근', revised: '긴엄지폄근' },
+      en: 'extensor hallucis longus',
+      la: 'musculus extensor hallucis longus',
+    },
+    kind: 'muscle',
+    origin: '비골 앞면 중간부와 골간막',
+    insertion: '무지 말절골 저부',
+    action: '무지 신전, 발목 배굴 보조',
+    nerve: '심비골신경',
+    notes: [
+      '위쪽에서는 전경골근과 장지신근 사이에 숨어 있다가 아래에서 둘 사이로 나온다',
+      '엄지를 위로 들면 발등에서 힘줄이 도드라진다 — 맨눈으로 확인할 수 있는 근육',
+    ],
+  },
+  {
+    id: 'anterior-tibial-artery',
+    name: {
+      ko: { classic: '전경골동맥', revised: '앞정강동맥' },
+      en: 'anterior tibial artery',
+      la: 'arteria tibialis anterior',
+    },
+    kind: 'vessel',
+    origin: '슬와동맥에서 갈라져 골간막을 뚫고 앞 칸으로 넘어온다',
+    insertion: '발목을 넘어 족배동맥이 된다',
+    action: '종아리 앞 칸의 혈류',
+    notes: ['심비골신경과 나란히 골간막 위를 내려간다'],
+  },
+  {
+    id: 'interosseous-membrane',
+    name: {
+      ko: { classic: '골간막', revised: '뼈사이막' },
+      en: 'interosseous membrane of the leg',
+      la: 'membrana interossea cruris',
+    },
+    kind: 'fascia',
+    /* 두 뼈 사이에 팽팽히 걸린 막 — 방향이 없으므로 부착부 2개 */
+    attachments: ['경골 골간연', '비골 골간연'],
+    action: '경골과 비골을 잇고 앞·뒤 칸을 나누며 근육이 붙을 면을 만든다',
+    notes: [
+      '앞 칸과 뒤 칸의 경계다. 전경골동맥이 이 막의 위쪽 구멍을 뚫고 앞으로 넘어온다',
+    ],
+  },
+  {
     id: 'flexor-retinaculum',
     name: {
       ko: { classic: '굴근지대', revised: '굽힘근지지띠' },
