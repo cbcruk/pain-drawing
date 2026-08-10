@@ -80,11 +80,21 @@ export const lowerLegAnteriorView: View = {
     license: 'Public domain (US)',
     tracedAt: '2026-08-10',
   },
+  /*
+    복사뼈 둘의 x가 어긋나 있었다. 둘의 중점이 148인데 다리 축은 161이라
+    **13만큼 바깥으로 밀려** 있었고, 그 자리에 맞춰 그려진 가장자리 구조들이
+    윤곽 밖으로 나가 있었다(제3비골근이 18.5).
+
+    복사뼈는 발목에서 가장 튀어나온 자리이므로 윤곽의 좌우 끝에 놓는 게 맞다.
+    Gray441·442로 고칠 수 있을 줄 알았는데 **못 고친다** — 둘 다 옆에서 본
+    그림이라 앞뒤 두께를 말하지 그 높이의 내외측 폭을 말하지 않는다. 옆면
+    도판에서 옮길 수 있는 건 높이뿐이고, 안팎 위치는 아니다.
+  */
   landmarks: {
     'tibial-tuberosity': [172, 74],
     'tibial-anterior-border': [176, 300],
-    'medial-malleolus': [180, 572],
-    'lateral-malleolus': [116, 588],
+    'medial-malleolus': [193, 572],
+    'lateral-malleolus': [128, 588],
   },
   /*
     여기 깊이는 곧이곧대로 피부에서 뼈로 가는 순서다. 근막을 열면 앞 칸 근육이
