@@ -168,6 +168,118 @@ Gray's 1918 관절편(Articulations)에 다음 성격의 그림들이 있다. **
 - 경골 상단을 위에서 본 그림 (반월판과 인대 부착부)
 - 관절낭 측면 (관절낭 범위)
 
+## 종아리·발목 — 도판 다섯 장
+
+| 파일 | 크기 | 내용 | 다리 |
+|---|---|---|---|
+| Gray437.png | 260×1000 | 종아리 **앞면** 표층 — 무릎에서 발가락까지 | 오른쪽 |
+| Gray438.png | 280×900 | 종아리 **뒷면 표층** — 비복근을 잘라 가자미근을 드러냄 | 오른쪽 |
+| Gray439.png | 222×900 | 종아리 **뒷면 심층** — 가자미근을 잘라 심부 굴근을 드러냄 | 오른쪽 |
+| Gray441.png | 700×488 | **발목 힘줄집, 외측면** (파란색이 활막집) | 오른발 |
+| Gray442.png | 700×436 | **발목 힘줄집, 내측면** | 오른발 |
+
+**번호는 캡션이 아니라 파일명에서 온다.** Commons의 Gray 도판 파일에는 책의
+"FIG. 437" 캡션이 그림 안에 인쇄돼 있지 않다. 그래서 확인한 것은 번호가 아니라
+**내용**이다 — 각 장의 라벨을 읽어 무엇을 그린 그림인지 확정했고, 아래 라벨
+목록이 그 근거다. 발 도판 443~447과 이어지는 연번이라는 점도 맞는다.
+
+### 각 장에서 읽은 라벨
+
+- **437** — `TIBIALIS ANTERIOR` · `EXTENSOR DIGITORUM LONGUS` ·
+  `EXTENSOR HALLUCIS LONGUS` · `PERONEUS LONGUS` · `PERONEUS BREVIS` ·
+  `PERONEUS TERTIUS` · `Tibia` · `Trans. Crural Ligament` ·
+  `Cruciate crural ligament`. 위쪽에 슬개골과 슬개인대가 그려져 있다.
+- **438** — 넓적다리 쪽에 `SEMI-TENDINOSUS` · `SEMIMEMBRANOSUS` · `BICEPS` ·
+  `Popliteal Fossa`, 종아리에 `GASTROCNEMIUS Medial Head` · `Lateral Head`
+  (**둘 다 절단면**) · `PLANTARIS` · `SOLEUS` · `TENDO CALCANEUS` ·
+  `Calcaneus`, 발목 안쪽에 `Tendons of Flex. hall. long. · Flex. dig. long. ·
+  Tibialis posterior`, 바깥쪽에 `Tendons of Peronaei longus et brevis`.
+- **439** — `Femur` · `Medial Condyle` · `Lateral Condyle` ·
+  `Fib. collateral lig.` · `Head of fibula` · `POPLITEUS` ·
+  `TIBIALIS POSTERIOR` · `FLEXOR DIGITORUM LONGUS` ·
+  `FLEXOR HALLUCIS LONGUS` · `PERONEUS LONGUS` · `PERONEUS BREVIS` ·
+  `SOLEUS`(절단).
+- **441** — `Trans. Crural Ligament` · `Cruciate ligament` ·
+  `Tibialis anterior` · `Extensor dig. longus` · `Ext. hall. long.` ·
+  `Ext. dig. brevis` · `Peronaeus longus` · `Peronaeus brevis` ·
+  `Peronaeus tertius` · `Tendo calcaneus`.
+- **442** — `Tibialis anterior` · `Tibialis posterior` ·
+  `Flexor dig. longus` · `Ext. hall. long.` · `Flexor hallucis longus` ·
+  `Cruciate ligament` · `Trans. crural ligament` · `Bursa` ·
+  `Tendo calcaneus`.
+
+### 좌우는 어떻게 판별했나
+
+발 도판과 달리 다섯 장 모두 **오른쪽**이다. 우연이 아니라 확인한 결과이고,
+근거는 보는 면마다 규칙이 뒤집힌다는 것이다.
+
+- **앞에서 본 그림** — 마주 선 상태라 대상의 오른다리가 화면 왼쪽에 온다.
+  그 다리의 내측은 정중선 쪽, 즉 **화면 오른쪽**이다.
+- **뒤에서 본 그림** — 같은 방향을 보고 서 있으므로 오른다리가 화면 오른쪽에
+  오고, 내측은 **화면 왼쪽**이다.
+
+| 도판 | 내측을 알려주는 표시 | 위치 | 면 | 결론 |
+|---|---|---|---|---|
+| 437 | `Tibia`(경골 피하면) | 오른쪽 | 앞 | 오른쪽 |
+| 438 | `Medial Head` · 내측 세 힘줄 | 왼쪽 | 뒤 | 오른쪽 |
+| 439 | `Medial Condyle` (반대편에 `Head of fibula`) | 왼쪽 | 뒤 | 오른쪽 |
+| 441 | 비골근 힘줄이 보이는 면 · 발가락이 오른쪽 | — | 외측 | 오른발 |
+| 442 | 후경골건·장무지굴근건이 보이는 면 · 발가락이 왼쪽 | — | 내측 | 오른발 |
+
+441·442의 규칙은 이렇다. 발끝을 북쪽에 두면 오른발의 외측면은 동쪽을 향하므로
+동쪽에서 보면 발가락이 **오른쪽**에 오고, 내측면은 서쪽을 향하므로 서쪽에서
+보면 발가락이 **왼쪽**에 온다. 왼발이면 둘 다 반대다.
+
+우리 종아리 뷰가 전부 `side: 'right'` 기준이므로 **다섯 장 다 반전이 필요 없다.**
+왼쪽 뷰는 `mirrorOf`로 파생되니 원본 좌표는 오른쪽 것 하나만 있으면 된다.
+
+### 어느 뷰에 무엇을 얹을 수 있나
+
+| 뷰 · 층 | 도판 | 상태 |
+|---|---|---|
+| `lower-leg-anterior` 전부 | 437 | **가능** — 무릎에서 발목까지 한 장에 있다 |
+| `lower-leg-posterior` L2 가자미근 | 438 | **가능** |
+| `lower-leg-posterior` L3 심부 굴근 | 439 | **가능** |
+| `lower-leg-medial` 심부 통로 | 439 + 442 | 부분 — 뒤에서 본 것이라 내측면 투영이 필요 |
+| `lower-leg-lateral` 비골근 | 439 + 441 | 부분 — 같은 이유 |
+| **`lower-leg-posterior` L1 비복근** | **없음** | **불가** |
+| 신근·굴근·비골근 지대, 발목 힘줄 주행 | 441 · 442 | **가능** (발목 국소) |
+
+### 아직 못 하는 두 가지
+
+**1. 비복근을 그린 도판이 없다.** 438은 "뒷면 표층"이지만 비복근 두 갈래를
+**가로로 잘라 젖힌** 그림이다. 대퇴골 기시부와 절단면 폭은 읽히지만 종아리를
+따라 내려가는 근육 배는 아예 그려져 있지 않다. 하필 종아리에서 사용자가 가장
+많이 누르는 근육이라, L1은 도판이 한 장 더 있어야 한다 — **비복근이 온전한
+뒷면 그림**(Gray's 표층/체표 해부 쪽에 있다).
+
+**2. 다리 길이의 외측면 도판이 없다.** 441은 발목 국소라 종아리 중간의 장·단
+비골근 배를 담지 못한다. 439에 비골근이 옆모습으로 걸쳐 보이지만 그건 뒤에서
+본 것이라, 외측 뷰에 얹으려면 투영을 지어내야 한다. 그건 트레이싱이 아니다.
+
+**있으면 좋은 한 장 더 — Gray440.** 437~439와 441~442 사이의 번호가 비어 있고,
+그 자리는 **다리 중간 가로단면**으로 알려져 있다. 단면은 정면도가 말해주지 않는
+것을 말한다 — 무엇이 무엇 위에 있는지. 우리 층 번호(L1/L2/L3)와 `reachable`
+판정의 가장 직접적인 근거가 될 자료다.
+
+### 정합 기준점 — 도판에서 실제로 보이는 것
+
+| 랜드마크 | 437 (앞) | 438 (뒤 표층) | 439 (뒤 심층) |
+|---|---|---|---|
+| `tibial-tuberosity` | 슬개인대가 끝나는 자리로 읽힌다 | — | — |
+| `tibial-anterior-border` | `Tibia` 피하면이 세로로 다 보인다 | — | — |
+| `fibular-head` | 근육에 덮인다 | 덮인다 | **`Head of fibula` 라벨** |
+| `medial-malleolus` | **지대에 덮인다** | 힘줄이 감아 도는 자리로 읽힌다 | 보인다 |
+| `lateral-malleolus` | **지대에 덮인다** | 비골근건이 감아 도는 자리 | 보인다 |
+| `calcaneal-tuberosity` | 없음(발등 쪽) | **`Calcaneus` 라벨** | 보인다 |
+
+앞 뷰의 함정이 표에 있다. 437은 발목에서 **두 복사뼈가 모두 상·하 신근지대에
+덮여** 있어 끝점이 뚜렷하지 않다. 위쪽 두 점(경골조면·경골 앞 모서리)은
+선명하므로 세로축은 잘 잡히지만, 아래쪽 두 점은 추정이다. 3점 이상이라 좌우
+반전은 데이터로 갈리되(자유도 4 < 식 6), **rms가 작게 나와도 그게 아래쪽
+정확도를 보장하지 않는다** — 무릎에서 확인한 것과 같은 성질이다. 기준점이 한쪽에
+몰리면 먼 쪽 오차가 rms에 거의 안 잡힌다.
+
 ## 왜 레포에 두는가
 
 트레이싱 결과를 재현·검증하려면 원본이 있어야 한다. PD라 포함에 제약이 없다.
