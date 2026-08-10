@@ -50,6 +50,8 @@ export interface Draft {
   anchored: boolean
   notes: string
   commonIssues: string
+  /** TA98 코드만 받는다 — 저작 도구가 대조에 쓰는 판이 그것뿐이다 */
+  taCode: string
   fmaId: string
   depth: number
   reachable: boolean
@@ -85,6 +87,7 @@ export function emptyDraft(depth: number): Draft {
     anchored: false,
     notes: '',
     commonIssues: '',
+    taCode: '',
     fmaId: '',
     depth,
     reachable: true,
@@ -165,6 +168,9 @@ export function toStructure(draft: Draft): Structure {
       en: draft.en.trim(),
       la: draft.la.trim(),
     },
+    ...(draft.taCode.trim()
+      ? { ta: { edition: 'TA98' as const, code: draft.taCode.trim() } }
+      : {}),
     ...optional({ action: draft.action, fmaId: draft.fmaId }),
     ...listed(draft),
   }
@@ -261,6 +267,7 @@ export function fromExisting(
     anchored: structure.attachments !== undefined,
     notes: (structure.notes ?? []).join('\n'),
     commonIssues: (structure.commonIssues ?? []).join('\n'),
+    taCode: structure.ta?.code ?? '',
     fmaId: structure.fmaId ?? '',
     depth: placement?.depth ?? 0,
     reachable: placement?.reachable ?? true,

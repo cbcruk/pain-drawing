@@ -258,9 +258,27 @@ if (import.meta.env?.DEV) {
   const problems: string[] = []
 
   const seenStructure = new Set<string>()
+  /*
+    TA 코드는 밖에 있는 기준이라 오타가 나도 화면에서는 아무 일도 안 일어난다.
+    형태와 중복만이라도 여기서 잡는다.
+
+    중복이 문제인 이유: 두 레코드가 같은 표준 항목을 가리킨다면 둘 중 하나는
+    그 항목이 아니다. 표준보다 잘게 나눈 레코드는 코드를 **비워야** 하고,
+    같은 코드를 나눠 가지면 안 된다.
+  */
+  const TA98 = /^A\d{2}\.\d\.\d{2}\.\d{3}$/
+  const seenTa = new Map<string, string>()
   for (const s of STRUCTURES) {
     if (seenStructure.has(s.id)) problems.push(`중복 structure id: ${s.id}`)
     seenStructure.add(s.id)
+
+    if (!s.ta) continue
+    if (!TA98.test(s.ta.code)) {
+      problems.push(`TA98 코드 형태가 아니다: ${s.id} → ${s.ta.code}`)
+    }
+    const owner = seenTa.get(s.ta.code)
+    if (owner) problems.push(`같은 TA 코드: ${owner} · ${s.id} → ${s.ta.code}`)
+    else seenTa.set(s.ta.code, s.id)
   }
 
   const seenView = new Set<string>()

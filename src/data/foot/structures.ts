@@ -1,6 +1,33 @@
 import type { Structure } from '@/types/anatomy.types'
 
+/*
+  ## TA98 대조 (`ta` · `fmaId`)
+
+  종아리와 같은 방법이다 — TAViewer(`mhalle/taviewer`, MIT)의 `human.json`과
+  라틴어 이름을 기계로 맞췄다. 방법과 규칙은 SPEC "표준 용어 대조".
+
+  28개 중 17개가 붙었다. 나머지 11개는 **표준에 대응 항목이 없어서 비운 것**이지
+  아직 안 채운 게 아니다. 세 무리로 갈린다.
+
+  - **힘줄 7개** — TA98의 하지 항목에서 `tendo`로 시작하는 것은 `tendo calcaneus`
+    하나뿐이다. 표준은 근육을 이름 짓고 그 힘줄을 따로 이름 짓지 않는다. 우리는
+    배와 힘줄을 나눠 두는데(만져지는 자리가 다르므로) 표준에는 그 구분이 없다.
+  - **족저건막 3개** — 표준에는 `aponeurosis plantaris` 하나뿐이고 내측·중앙·외측
+    밴드가 없다. 셋에 같은 코드를 붙이면 그 코드가 셋 중 무엇도 가리키지 않게 된다.
+  - **신근지대 1개** — 표준은 상·하 둘로 나눠 싣는다(A04.7.03.025 · A04.7.03.027).
+
+  같은 이름이 손에도 있는 항목(소지외전근·단소지굴근·배측골간근·종자골)은 상지
+  코드를 빼고 하지 것만 남겼다. 신근지대는 이 함정이 실제로 걸린 자리다 —
+  하지 쪽 이름이 `retinaculum musculorum extensorum inferius`처럼 길어서 짧은
+  이름으로 검색하면 **손목 것(A04.6.03.010)만 잡힌다.**
+*/
 export const footStructures: Structure[] = [
+  /*
+    아래 세 밴드는 `ta`가 없다. TA98에 `aponeurosis plantaris`(A04.7.03.031)
+    하나뿐이라 어느 밴드도 그 코드가 아니다. 우리가 셋으로 나눈 이유는 눌러서
+    갈라지기 때문이고 — 중앙대가 족저근막염에서 압통이 잡히는 자리다 — 표준은
+    그 단위로 나누지 않는다.
+  */
   {
     id: 'pa-medial',
     name: {
@@ -47,6 +74,8 @@ export const footStructures: Structure[] = [
       en: 'abductor hallucis',
       la: 'musculus abductor hallucis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.056' },
+    fmaId: '37448',
     kind: 'muscle',
     origin: '종골 내측돌기, 굴근지대, 족저건막',
     insertion: '무지 근위지골 저부 내측',
@@ -64,6 +93,8 @@ export const footStructures: Structure[] = [
       en: 'flexor digitorum brevis',
       la: 'musculus flexor digitorum brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.067' },
+    fmaId: '37450',
     kind: 'muscle',
     origin: '종골 내측돌기, 족저건막',
     insertion: '2~5지 중위지골 양측',
@@ -78,6 +109,8 @@ export const footStructures: Structure[] = [
       en: 'abductor digiti minimi',
       la: 'musculus abductor digiti minimi',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.063' },
+    fmaId: '37451',
     kind: 'muscle',
     origin: '종골 내·외측돌기, 족저건막',
     insertion: '제5지 근위지골 저부 외측',
@@ -92,6 +125,8 @@ export const footStructures: Structure[] = [
       en: 'quadratus plantae',
       la: 'musculus quadratus plantae',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.068' },
+    fmaId: '37452',
     kind: 'muscle',
     origin: '종골 하면 내측·외측 (두 개의 두)',
     insertion: '장지굴근건 외측연',
@@ -120,6 +155,8 @@ export const footStructures: Structure[] = [
       en: 'lumbricals',
       la: 'musculi lumbricales pedis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.069' },
+    fmaId: '37453',
     kind: 'muscle',
     origin: '장지굴근 힘줄',
     insertion: '2~5지 신전건막 내측',
@@ -151,6 +188,8 @@ export const footStructures: Structure[] = [
       en: 'flexor hallucis brevis',
       la: 'musculus flexor hallucis brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.057' },
+    fmaId: '37449',
     kind: 'muscle',
     origin: '입방골, 외측설상골, 후경골근 힘줄',
     insertion: '무지 근위지골 저부 (내측두·외측두)',
@@ -165,6 +204,8 @@ export const footStructures: Structure[] = [
       en: 'sesamoid bones (tibial · fibular)',
       la: 'ossa sesamoidea',
     },
+    ta: { edition: 'TA98', code: 'A02.5.19.001' },
+    fmaId: '71341',
     kind: 'bone',
     insertion: '단무지굴근 힘줄 내 매몰',
     action: '제1중족지절의 지렛대 팔을 늘리고 힘줄을 보호',
@@ -176,8 +217,10 @@ export const footStructures: Structure[] = [
     name: {
       ko: { classic: '무지내전근 사두', revised: '엄지모음근 빗갈래' },
       en: 'adductor hallucis, oblique head',
-      la: 'musculus adductor hallucis',
+      la: 'caput obliquum musculi adductoris hallucis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.061' },
+    fmaId: '46014',
     kind: 'muscle',
     origin: '제2~4중족골 저부, 장비골근 건초',
     insertion: '무지 근위지골 저부 외측 (외측 종자골 경유)',
@@ -189,8 +232,10 @@ export const footStructures: Structure[] = [
     name: {
       ko: { classic: '무지내전근 횡두', revised: '엄지모음근 가로갈래' },
       en: 'adductor hallucis, transverse head',
-      la: 'musculus adductor hallucis',
+      la: 'caput transversum musculi adductoris hallucis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.062' },
+    fmaId: '46015',
     kind: 'muscle',
     origin: '제3~5중족지절 관절낭, 심횡중족인대',
     insertion: '무지 근위지골 저부 외측',
@@ -205,6 +250,8 @@ export const footStructures: Structure[] = [
       en: 'flexor digiti minimi brevis',
       la: 'musculus flexor digiti minimi brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.066' },
+    fmaId: '37455',
     kind: 'muscle',
     origin: '제5중족골 저부, 장비골근 건초',
     insertion: '제5지 근위지골 저부',
@@ -219,6 +266,8 @@ export const footStructures: Structure[] = [
       en: 'plantar interossei',
       la: 'musculi interossei plantares',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.071' },
+    fmaId: '37458',
     kind: 'muscle',
     origin: '제3~5중족골 내측면 (단두)',
     insertion: '해당 족지 근위지골 저부 내측',
@@ -232,6 +281,8 @@ export const footStructures: Structure[] = [
       en: 'dorsal interossei',
       la: 'musculi interossei dorsales',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.070' },
+    fmaId: '37457',
     kind: 'muscle',
     origin: '인접한 두 중족골 (양두)',
     insertion: '제2~4지 근위지골 저부',
@@ -275,6 +326,16 @@ export const footStructures: Structure[] = [
       en: 'extensor retinaculum',
       la: 'retinaculum musculorum extensorum',
     },
+    /*
+      비골근지대와 같은 이유로 `ta`가 없다. TA98은 상신근지대(A04.7.03.025)와
+      하신근지대(A04.7.03.027)로 나눠 싣는데 우리는 발목 앞을 지나는 한 띠로
+      두었다.
+
+      여기가 상하지 동명 함정이 실제로 걸린 자리이기도 하다. 짧은 이름
+      `retinaculum musculorum extensorum`으로 검색하면 **손목 것**(A04.6.03.010)
+      하나만 잡힌다. 하지 것은 이름에 `superius`/`inferius`가 붙어 있어서다.
+      후보가 하나라고 맞는 게 아니다.
+    */
     kind: 'fascia',
     origin: '종골 외측·발목 앞면',
     insertion: '내측복사·족배 근막',
@@ -330,6 +391,8 @@ export const footStructures: Structure[] = [
       en: 'fibularis (peroneus) tertius',
       la: 'musculus fibularis tertius',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.039' },
+    fmaId: '22538',
     kind: 'muscle',
     origin: '비골 원위 전면',
     insertion: '제5중족골 저부 배측',
@@ -344,6 +407,8 @@ export const footStructures: Structure[] = [
       en: 'extensor digitorum brevis',
       la: 'musculus extensor digitorum brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.055' },
+    fmaId: '51140',
     kind: 'muscle',
     origin: '종골 배측 전외측',
     insertion: '2~4지 장신근건 외측',
@@ -360,6 +425,8 @@ export const footStructures: Structure[] = [
       en: 'extensor hallucis brevis',
       la: 'musculus extensor hallucis brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.054' },
+    fmaId: '51141',
     kind: 'muscle',
     origin: '종골 배측 (단지신근의 내측 갈래)',
     insertion: '무지 근위지골 저부',
@@ -373,6 +440,7 @@ export const footStructures: Structure[] = [
       en: 'deep fibular (peroneal) nerve',
       la: 'nervus fibularis profundus',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.055' },
     kind: 'nerve',
     origin: '총비골신경에서 분지',
     insertion: '제1~2지 사이 배측 피부',
@@ -388,6 +456,8 @@ export const footStructures: Structure[] = [
       en: 'dorsalis pedis artery',
       la: 'arteria dorsalis pedis',
     },
+    ta: { edition: 'TA98', code: 'A12.2.16.048' },
+    fmaId: '43915',
     kind: 'vessel',
     origin: '전경골동맥의 연속',
     insertion: '제1지간에서 심부 족저궁으로',

@@ -28,16 +28,46 @@ export interface StructureName {
   la: string
 }
 
+/**
+ * 국제 해부학 용어 표준(Terminologia Anatomica)의 항목 식별자.
+ *
+ * `name.la`는 **우리가 적은 이름**이고 이것은 **대조한 결과**다 — 표준에 이
+ * 코드로 실린 항목이 있고 그 라틴어 이름이 우리 `la`와 같다는 뜻이다. 이름을
+ * 스스로 검증할 수는 없으므로 밖에 기준을 두는 것이고, 도판 번호를 캡션으로
+ * 확정하는 것과 같은 규율이다.
+ *
+ * 판을 함께 적는 이유: TA98과 TA2는 코드 체계가 아예 다르다. TA98은
+ * `A04.7.02.047` 형태이고 TA2는 일련번호라, 문자열 하나로 두면 나중에 어느
+ * 판의 코드인지 알 수 없게 된다.
+ */
+export interface TaReference {
+  edition: 'TA98'
+  code: string
+}
+
 interface StructureBase {
   id: string
   name: StructureName
+
+  /**
+   * 표준 용어 대조 결과. **대응 항목이 없으면 비운다** — 없다는 것도 사실이고,
+   * 근처 코드를 끌어다 적으면 그게 나중에 근거로 둔갑한다.
+   *
+   * 비게 되는 경우가 실제로 있다. 표준이 우리보다 잘게 나눈 자리(비골근지대는
+   * TA98에서 상·하 둘로 나뉜다), 반대로 우리가 더 잘게 나눈 자리(비복근 두
+   * 갈래는 TA98에 근육 하나로만 있다), 그리고 근육 배와 힘줄을 따로 두는
+   * 우리 규칙(만져지는 자리가 다르므로)에 표준이 대응하지 않는 경우다.
+   */
+  ta?: TaReference
+
+  /** 표준 대조에서 함께 나오는 FMA id. TA98 항목 전부에 있지는 않다 */
+  fmaId?: string
 
   /** 조직 종류와 무관하게 "무엇을 하는가"는 물을 수 있다 */
   action?: string
 
   notes?: string[]
   commonIssues?: string[]
-  fmaId?: string
 }
 
 /** 근육·힘줄·신경·혈관 — 기시에서 정지로 간다 */
@@ -112,12 +142,26 @@ export interface TraceSource {
 }
 
 /**
- * traced는 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야
- * 하므로 타입에서 막는다.
+ * 좌표가 무엇을 주장하는가. 셋 다 출처 유무가 다르고, 모식도만 출처가 없다.
+ *
+ * - `schematic` — 손으로 찍었다. 아무것도 주장하지 않는다.
+ * - `normalized` — **상대 위치는 자료에서, 비율은 뷰에서.** 자료를 상사변환으로
+ *   얹을 수 없을 때 쓴다. 자료의 다리가 뷰보다 뭉툭하면 폭과 길이를 동시에
+ *   맞추는 등방 배율이 존재하지 않으므로, 좌표 대신 **어느 높이에서 폭의 몇
+ *   지점인가**를 옮긴다. 살아남는 것은 순서와 상대 위치이고, 잃는 것은 모양과
+ *   각도다.
+ * - `traced` — 자료의 좌표를 상사변환으로 그대로 옮겼다.
+ *
+ * 뒤 둘은 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야 하므로
+ * 타입에서 막는다.
  */
 export type Provenance =
   | { fidelity: 'schematic'; source?: never }
+  | { fidelity: 'normalized'; source: TraceSource }
   | { fidelity: 'traced'; source: TraceSource }
+
+/** 약한 순서 — 고지 문구가 절대 과장되지 않게 하는 기준 */
+export const FIDELITY_ORDER = ['schematic', 'normalized', 'traced'] as const
 
 /** 상속 = 뷰 값을 따른다. 부분 트레이싱 중인 뷰가 정상 상태다. */
 export type InheritedProvenance = { fidelity?: never; source?: never }

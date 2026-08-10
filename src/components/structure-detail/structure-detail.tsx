@@ -68,20 +68,23 @@ export function StructureDetail({
         className="mt-2.5 inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono text-[10.5px]"
         style={{
           borderColor:
-            provenance.fidelity === 'traced'
-              ? 'var(--color-accent)'
-              : 'var(--color-rule)',
+            provenance.fidelity === 'schematic'
+              ? 'var(--color-rule)'
+              : 'var(--color-accent)',
           color:
-            provenance.fidelity === 'traced'
-              ? 'var(--color-accent)'
-              : 'var(--color-muted)',
+            provenance.fidelity === 'schematic'
+              ? 'var(--color-muted)'
+              : 'var(--color-accent)',
         }}
       >
-        {provenance.fidelity === 'traced' ? (
+        {provenance.fidelity === 'traced' && (
           <>트레이싱 · {provenance.source.ref}</>
-        ) : (
-          <>모식도 — 실측 근거 없음</>
         )}
+        {/* 상대 위치만 옮겼다는 것을 배지에서부터 구분해 말한다 */}
+        {provenance.fidelity === 'normalized' && (
+          <>상대 위치 · {provenance.source.ref}</>
+        )}
+        {provenance.fidelity === 'schematic' && <>모식도 — 실측 근거 없음</>}
       </div>
 
       <dl className="mt-4 grid grid-cols-[70px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[13px] leading-relaxed">
