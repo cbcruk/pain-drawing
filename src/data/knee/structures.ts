@@ -6,6 +6,23 @@ import type { Structure } from '@/types/anatomy.types'
   않는다.
 
   좌표는 전부 손으로 찍은 모식도다. refs/에 무릎 도판이 아직 없다.
+
+  ## TA98 대조 (`ta` · `fmaId`)
+
+  21개 중 15개가 붙었다. 인대·연골은 전부 붙는다 — `A03.6.08.*`이 무릎 관절
+  하나에 배정된 구간이라 대응이 일대일이다. 비복근 두 갈래도 표준이 `caput
+  mediale`/`caput laterale`로 나눠 싣고 있어 각각 붙었다(A04.7.02.046 ·
+  A04.7.02.045). 우리 `la`는 그걸 `caput mediale musculi gastrocnemii`처럼 풀어
+  적은 것이다 — 표준은 부모 항목 밑에서 짧게 쓰고 우리 목록은 평평해서다.
+
+  비운 6개는 방법 문제가 아니라 단위 문제다. 방법과 규칙은 SPEC "표준 용어 대조".
+
+  - **힘줄 5개** (대퇴사두근건·반막양근건·반건양근건·대퇴이두근건·슬와근건) —
+    TA98은 근육을 이름 짓고 힘줄을 따로 이름 짓지 않는다. 다섯 근육 모두
+    `A04.7.02.*`에 있지만 그건 근육이지 우리가 무릎에서 그린 힘줄이 아니다.
+  - **관절낭 1개** — `capsula articularis`(A03.0.00.026)는 있지만 그건
+    `juncturae > junctura synovialis` 밑의 **일반 용어**, 즉 모든 관절에
+    해당하는 개념이다. 무릎 관절낭을 가리키는 항목이 아니다.
 */
 export const kneeStructures: Structure[] = [
   {
@@ -28,6 +45,8 @@ export const kneeStructures: Structure[] = [
       en: 'patellar ligament',
       la: 'ligamentum patellae',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.015' },
+    fmaId: '44581',
     kind: 'ligament',
     attachments: ['슬개골 첨부 (하연)', '경골조면'],
     action: '대퇴사두근의 힘을 경골로 전달',
@@ -44,6 +63,8 @@ export const kneeStructures: Structure[] = [
       en: 'medial patellar retinaculum',
       la: 'retinaculum patellae mediale',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.016' },
+    fmaId: '44587',
     kind: 'fascia',
     origin: '내측광근 건막 · 내전근결절',
     insertion: '슬개골 내측연과 경골 내측 상부',
@@ -56,6 +77,8 @@ export const kneeStructures: Structure[] = [
       en: 'lateral patellar retinaculum',
       la: 'retinaculum patellae laterale',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.017' },
+    fmaId: '44590',
     kind: 'fascia',
     origin: '외측광근 건막 · 장경인대',
     insertion: '슬개골 외측연과 경골 외측 상부',
@@ -70,6 +93,8 @@ export const kneeStructures: Structure[] = [
       en: 'iliotibial tract',
       la: 'tractus iliotibialis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.03.003' },
+    fmaId: '51048',
     kind: 'fascia',
     origin: '장골능 · 대둔근 · 대퇴근막장근',
     insertion: '경골 외측과의 Gerdy 결절',
@@ -85,6 +110,15 @@ export const kneeStructures: Structure[] = [
       en: 'articular capsule',
       la: 'capsula articularis',
     },
+    /*
+      `ta`가 없는 다른 종류의 자리다. 이름은 TA98에 그대로 있지만
+      (`capsula articularis`, A03.0.00.026) 그 항목은 `junctura synovialis` 밑의
+      **일반 용어** — 모든 활막관절이 가진 것을 가리키는 개념이다. 이 레코드는
+      무릎의 관절낭이므로 그 코드가 아니다.
+
+      앞의 빈 자리들이 "표준이 더 잘게 나눴다"였다면 여기는 반대로 "표준이 더
+      넓다"이다. 이름이 같다는 것만으로 붙이면 안 되는 이유가 이쪽에 있다.
+    */
     kind: 'fascia',
     attachments: ['대퇴골 관절면 가장자리', '경골 관절면 가장자리'],
     action: '관절강을 닫고 활액을 가둔다',
@@ -100,6 +134,8 @@ export const kneeStructures: Structure[] = [
       en: 'tibial (medial) collateral ligament',
       la: 'ligamentum collaterale tibiale',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.012' },
+    fmaId: '44600',
     kind: 'ligament',
     attachments: ['대퇴골 내측상과', '경골 내측면 (관절선 아래 4~6cm)'],
     action: '외반(무릎이 안쪽으로 꺾이는) 스트레스에 저항',
@@ -114,6 +150,8 @@ export const kneeStructures: Structure[] = [
       en: 'fibular (lateral) collateral ligament',
       la: 'ligamentum collaterale fibulare',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.011' },
+    fmaId: '9660',
     kind: 'ligament',
     attachments: ['대퇴골 외측상과', '비골두'],
     action: '내반 스트레스에 저항',
@@ -129,6 +167,8 @@ export const kneeStructures: Structure[] = [
       en: 'medial meniscus',
       la: 'meniscus medialis',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.005' },
+    fmaId: '44620',
     kind: 'cartilage',
     attachments: ['경골 과간융기 앞구역 (전각)', '경골 과간융기 뒤구역 (후각)'],
     action: '접촉면을 넓혀 하중을 분산하고 관절을 안정시킨다',
@@ -144,6 +184,8 @@ export const kneeStructures: Structure[] = [
       en: 'lateral meniscus',
       la: 'meniscus lateralis',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.002' },
+    fmaId: '44631',
     kind: 'cartilage',
     attachments: ['경골 과간융기 앞구역 (전각)', '경골 과간융기 뒤구역 (후각)'],
     action: '접촉면을 넓혀 하중을 분산',
@@ -158,6 +200,8 @@ export const kneeStructures: Structure[] = [
       en: 'transverse ligament of the knee',
       la: 'ligamentum transversum genus',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.006' },
+    fmaId: '76856',
     kind: 'ligament',
     attachments: ['내측 반월판 전각', '외측 반월판 전각'],
     notes: ['뼈가 아니라 연골 둘을 잇는다. 없는 사람도 있다'],
@@ -169,6 +213,8 @@ export const kneeStructures: Structure[] = [
       en: 'anterior cruciate ligament',
       la: 'ligamentum cruciatum anterius',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.007' },
+    fmaId: '44614',
     kind: 'ligament',
     attachments: ['경골 과간부 앞쪽', '대퇴골 외측과의 내측면'],
     action: '경골이 앞으로 밀려나는 것과 과도한 회전을 막는다',
@@ -183,6 +229,8 @@ export const kneeStructures: Structure[] = [
       en: 'posterior cruciate ligament',
       la: 'ligamentum cruciatum posterius',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.008' },
+    fmaId: '44617',
     kind: 'ligament',
     attachments: ['경골 과간부 뒤쪽', '대퇴골 내측과의 외측면'],
     action: '경골이 뒤로 밀려나는 것을 막는다',
@@ -239,6 +287,8 @@ export const kneeStructures: Structure[] = [
       en: 'gastrocnemius, medial head',
       la: 'caput mediale musculi gastrocnemii',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.046' },
+    fmaId: '45956',
     kind: 'muscle',
     origin: '대퇴골 내측과 후면',
     insertion: '아킬레스건을 거쳐 종골',
@@ -253,6 +303,8 @@ export const kneeStructures: Structure[] = [
       en: 'gastrocnemius, lateral head',
       la: 'caput laterale musculi gastrocnemii',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.045' },
+    fmaId: '45959',
     kind: 'muscle',
     origin: '대퇴골 외측과 후면',
     insertion: '아킬레스건을 거쳐 종골',
@@ -266,6 +318,8 @@ export const kneeStructures: Structure[] = [
       en: 'oblique popliteal ligament',
       la: 'ligamentum popliteum obliquum',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.013' },
+    fmaId: '44582',
     kind: 'ligament',
     attachments: ['반막양근건 (내측 아래)', '대퇴골 외측과 후면 · 관절낭'],
     action: '관절낭 후면을 덧대어 과신전을 제한',
@@ -280,6 +334,8 @@ export const kneeStructures: Structure[] = [
       en: 'arcuate popliteal ligament',
       la: 'ligamentum popliteum arcuatum',
     },
+    ta: { edition: 'TA98', code: 'A03.6.08.014' },
+    fmaId: '44596',
     kind: 'ligament',
     attachments: ['비골두 첨부', '관절낭 후면 · 대퇴골 외측과'],
     action: '후외측 모서리를 보강',
