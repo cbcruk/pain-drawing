@@ -142,12 +142,26 @@ export interface TraceSource {
 }
 
 /**
- * traced는 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야
- * 하므로 타입에서 막는다.
+ * 좌표가 무엇을 주장하는가. 셋 다 출처 유무가 다르고, 모식도만 출처가 없다.
+ *
+ * - `schematic` — 손으로 찍었다. 아무것도 주장하지 않는다.
+ * - `normalized` — **상대 위치는 자료에서, 비율은 뷰에서.** 자료를 상사변환으로
+ *   얹을 수 없을 때 쓴다. 자료의 다리가 뷰보다 뭉툭하면 폭과 길이를 동시에
+ *   맞추는 등방 배율이 존재하지 않으므로, 좌표 대신 **어느 높이에서 폭의 몇
+ *   지점인가**를 옮긴다. 살아남는 것은 순서와 상대 위치이고, 잃는 것은 모양과
+ *   각도다.
+ * - `traced` — 자료의 좌표를 상사변환으로 그대로 옮겼다.
+ *
+ * 뒤 둘은 출처 없이 존재할 수 없다. 정밀도를 주장하는 순간 근거를 대야 하므로
+ * 타입에서 막는다.
  */
 export type Provenance =
   | { fidelity: 'schematic'; source?: never }
+  | { fidelity: 'normalized'; source: TraceSource }
   | { fidelity: 'traced'; source: TraceSource }
+
+/** 약한 순서 — 고지 문구가 절대 과장되지 않게 하는 기준 */
+export const FIDELITY_ORDER = ['schematic', 'normalized', 'traced'] as const
 
 /** 상속 = 뷰 값을 따른다. 부분 트레이싱 중인 뷰가 정상 상태다. */
 export type InheritedProvenance = { fidelity?: never; source?: never }

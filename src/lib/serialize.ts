@@ -121,8 +121,11 @@ function sourceToTs(source: TraceSource, indent: string): string[] {
 
 export function placementToTs(placement: StructureInView): string {
   const provenance: string[] =
-    placement.fidelity === 'traced'
-      ? [`    fidelity: 'traced',`, ...sourceToTs(placement.source, '    ')]
+    placement.fidelity === 'traced' || placement.fidelity === 'normalized'
+      ? [
+          `    fidelity: '${placement.fidelity}',`,
+          ...sourceToTs(placement.source, '    '),
+        ]
       : placement.fidelity === 'schematic'
         ? [`    fidelity: 'schematic',`]
         : []
@@ -145,7 +148,9 @@ export function placementToTs(placement: StructureInView): string {
 export function viewProvenanceToTs(view: View): string {
   if (view.fidelity === 'schematic') return `  fidelity: 'schematic',`
 
-  return [`  fidelity: 'traced',`, ...sourceToTs(view.source, '  ')].join('\n')
+  return [`  fidelity: '${view.fidelity}',`, ...sourceToTs(view.source, '  ')].join(
+    '\n',
+  )
 }
 
 export function landmarksToTs(landmarks: Record<string, Pt>): string {

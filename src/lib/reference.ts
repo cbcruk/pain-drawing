@@ -24,37 +24,48 @@ export function effectiveProvenance(
   if (placement?.fidelity === 'traced') {
     return { fidelity: 'traced', source: placement.source }
   }
+  if (placement?.fidelity === 'normalized') {
+    return { fidelity: 'normalized', source: placement.source }
+  }
   if (placement?.fidelity === 'schematic') return { fidelity: 'schematic' }
 
-  return view.fidelity === 'traced'
-    ? { fidelity: 'traced', source: view.source }
-    : { fidelity: 'schematic' }
+  return view.fidelity === 'schematic'
+    ? { fidelity: 'schematic' }
+    : { fidelity: view.fidelity, source: view.source }
 }
 
 /** 정밀도 고지 — 하드코딩하지 않고 데이터가 문구를 정한다 */
 export function fidelityNote(provenance: Provenance): string {
-  return provenance.fidelity === 'traced'
-    ? `${provenance.source.ref} 트레이싱 기반 위치`
-    : '모식도 기반 위치'
+  switch (provenance.fidelity) {
+    case 'traced':
+      return `${provenance.source.ref} 트레이싱 기반 위치`
+    case 'normalized':
+      // 좌표를 옮긴 게 아니라는 것이 이 문구의 요점이다
+      return `${provenance.source.ref}에서 상대 위치만 옮긴 기반 위치`
+    case 'schematic':
+      return '모식도 기반 위치'
+  }
 }
 
-/** 뷰 전체를 한 문장으로 — 부분 트레이싱이면 그렇다고 말해야 한다 */
+/**
+ * 뷰 전체를 한 문장으로 — 부분 트레이싱이면 그렇다고 말해야 한다.
+ *
+ * 등급이 섞이면 `mixed`다. 가장 강한 등급으로 뭉뚱그리면 고지가 과장되고,
+ * 가장 약한 등급으로 뭉뚱그리면 트레이싱한 층이 묻힌다.
+ */
 export function fidelitySummary(
   view: View,
   placements: StructureInView[],
-): 'schematic' | 'traced' | 'mixed' {
+): Provenance['fidelity'] | 'mixed' {
   if (placements.length === 0) return view.fidelity
 
-  let traced = 0
+  const grades = new Set<Provenance['fidelity']>([view.fidelity])
   for (const placement of placements) {
-    if (effectiveProvenance(placement, view).fidelity === 'traced') traced++
+    grades.add(effectiveProvenance(placement, view).fidelity)
   }
 
-  if (traced === 0) return 'schematic'
-
-  return traced === placements.length && view.fidelity === 'traced'
-    ? 'traced'
-    : 'mixed'
+  const [only] = [...grades]
+  return grades.size === 1 && only ? only : 'mixed'
 }
 
 function layerLabel(view: View, depth: number): string {
