@@ -28,16 +28,46 @@ export interface StructureName {
   la: string
 }
 
+/**
+ * 국제 해부학 용어 표준(Terminologia Anatomica)의 항목 식별자.
+ *
+ * `name.la`는 **우리가 적은 이름**이고 이것은 **대조한 결과**다 — 표준에 이
+ * 코드로 실린 항목이 있고 그 라틴어 이름이 우리 `la`와 같다는 뜻이다. 이름을
+ * 스스로 검증할 수는 없으므로 밖에 기준을 두는 것이고, 도판 번호를 캡션으로
+ * 확정하는 것과 같은 규율이다.
+ *
+ * 판을 함께 적는 이유: TA98과 TA2는 코드 체계가 아예 다르다. TA98은
+ * `A04.7.02.047` 형태이고 TA2는 일련번호라, 문자열 하나로 두면 나중에 어느
+ * 판의 코드인지 알 수 없게 된다.
+ */
+export interface TaReference {
+  edition: 'TA98'
+  code: string
+}
+
 interface StructureBase {
   id: string
   name: StructureName
+
+  /**
+   * 표준 용어 대조 결과. **대응 항목이 없으면 비운다** — 없다는 것도 사실이고,
+   * 근처 코드를 끌어다 적으면 그게 나중에 근거로 둔갑한다.
+   *
+   * 비게 되는 경우가 실제로 있다. 표준이 우리보다 잘게 나눈 자리(비골근지대는
+   * TA98에서 상·하 둘로 나뉜다), 반대로 우리가 더 잘게 나눈 자리(비복근 두
+   * 갈래는 TA98에 근육 하나로만 있다), 그리고 근육 배와 힘줄을 따로 두는
+   * 우리 규칙(만져지는 자리가 다르므로)에 표준이 대응하지 않는 경우다.
+   */
+  ta?: TaReference
+
+  /** 표준 대조에서 함께 나오는 FMA id. TA98 항목 전부에 있지는 않다 */
+  fmaId?: string
 
   /** 조직 종류와 무관하게 "무엇을 하는가"는 물을 수 있다 */
   action?: string
 
   notes?: string[]
   commonIssues?: string[]
-  fmaId?: string
 }
 
 /** 근육·힘줄·신경·혈관 — 기시에서 정지로 간다 */

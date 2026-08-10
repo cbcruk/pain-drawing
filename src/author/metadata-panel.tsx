@@ -219,6 +219,13 @@ export function MetadataPanel({ draft, view, onChange }: MetadataPanelProps) {
           onChange={(commonIssues) => onChange({ commonIssues })}
         />
         <Field
+          label="TA98 코드"
+          placeholder="표준에서 확인한 것만 · 예 A04.7.02.047"
+          value={draft.taCode}
+          onChange={(taCode) => onChange({ taCode })}
+          mono
+        />
+        <Field
           label="FMA id"
           value={draft.fmaId}
           onChange={(fmaId) => onChange({ fmaId })}

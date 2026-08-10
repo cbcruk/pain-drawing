@@ -16,6 +16,20 @@ import type { Structure } from '@/types/anatomy.types'
 
   근육 배(belly)와 힘줄은 별개 레코드로 둔다. 만져지는 자리가 다르기 때문이다 —
   후경골근 배는 종아리 깊숙이 있고 그 힘줄은 안쪽 복사뼈 뒤에서 만져진다.
+
+  ## TA98 코드는 어디서 왔나
+
+  `ta`와 `fmaId`는 손으로 적은 게 아니라 **TA98 데이터셋과 라틴어 이름을 맞춰
+  기계로 넣었다.** 출처는 Open Anatomy Project의 TAViewer(`mhalle/taviewer`,
+  MIT)에 들어 있는 `src/human.json`이고, 이 파일이 TA98 코드 · 라틴어 · 영어 ·
+  FMA id를 트리로 담고 있다. 대조 방법과 남은 문제는 SPEC "표준 용어 대조"에
+  적었다.
+
+  맞춘 기준은 라틴어 이름 하나뿐이다. 표준이 `m. soleus`처럼 줄여 쓰므로
+  `m.`·`n.`·`v.`·`a.`를 풀어서 비교했고, 같은 이름이 위팔에도 있는 굴근지대는
+  상지(`musculi membri superioris`) 쪽을 빼고 하지 것만 남겼다.
+
+  23개 중 22개가 붙었다. 안 붙은 하나는 아래 `fibular-retinaculum`이다.
 */
 export const lowerLegStructures: Structure[] = [
   {
@@ -25,6 +39,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'crural fascia',
       la: 'fascia cruris',
     },
+    ta: { edition: 'TA98', code: 'A04.7.03.021' },
+    fmaId: '45206',
     kind: 'fascia',
     /*
       관절낭과 같은 이유로 부착부 2개다. 다리를 빙 둘러 감싼 소매라 당기는
@@ -48,6 +64,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'soleus',
       la: 'musculus soleus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.047' },
+    fmaId: '22542',
     kind: 'muscle',
     origin: '비골두 후면과 경골 가자미근선',
     insertion: '아킬레스건을 거쳐 종골',
@@ -66,6 +84,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'plantaris',
       la: 'musculus plantaris',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.049' },
+    fmaId: '22543',
     kind: 'muscle',
     origin: '대퇴골 외측과 상방',
     insertion: '아킬레스건 내측 또는 종골',
@@ -83,6 +103,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'calcaneal (Achilles) tendon',
       la: 'tendo calcaneus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.048' },
+    fmaId: '51061',
     kind: 'tendon',
     origin: '비복근 두 갈래와 가자미근이 합쳐지는 자리',
     insertion: '종골 후면 중간부',
@@ -102,6 +124,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'tibialis posterior',
       la: 'musculus tibialis posterior',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.051' },
+    fmaId: '51099',
     kind: 'muscle',
     origin: '골간막과 경골·비골 후면',
     insertion: '주상골 조면을 중심으로 발바닥 여러 뼈',
@@ -116,6 +140,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'flexor digitorum longus',
       la: 'musculus flexor digitorum longus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.052' },
+    fmaId: '51071',
     kind: 'muscle',
     origin: '경골 후면',
     insertion: '2~5지 말절골 저부 (힘줄이 발바닥에서 갈라진다)',
@@ -129,6 +155,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'flexor hallucis longus',
       la: 'musculus flexor hallucis longus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.053' },
+    fmaId: '22593',
     kind: 'muscle',
     origin: '비골 후면 하부와 골간막',
     insertion: '무지 말절골 저부',
@@ -144,6 +172,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'fibularis (peroneus) longus',
       la: 'musculus fibularis longus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.041' },
+    fmaId: '22539',
     kind: 'muscle',
     origin: '비골두와 비골 외측면 상부',
     insertion: '발바닥을 가로질러 제1중족골 저부와 내측설상골',
@@ -158,6 +188,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'fibularis (peroneus) brevis',
       la: 'musculus fibularis brevis',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.042' },
+    fmaId: '22540',
     kind: 'muscle',
     origin: '비골 외측면 하부',
     insertion: '제5중족골 조면',
@@ -174,6 +206,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'tibialis anterior',
       la: 'musculus tibialis anterior',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.037' },
+    fmaId: '22532',
     kind: 'muscle',
     origin: '경골 외측면 상부와 골간막',
     insertion: '내측설상골과 제1중족골 저부',
@@ -191,6 +225,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'extensor digitorum longus',
       la: 'musculus extensor digitorum longus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.038' },
+    fmaId: '22534',
     kind: 'muscle',
     origin: '경골 외측과와 비골 앞면, 골간막',
     insertion: '2~5지 신근건막 (발등에서 네 갈래로 갈라진다)',
@@ -205,6 +241,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'extensor hallucis longus',
       la: 'musculus extensor hallucis longus',
     },
+    ta: { edition: 'TA98', code: 'A04.7.02.040' },
+    fmaId: '22533',
     kind: 'muscle',
     origin: '비골 앞면 중간부와 골간막',
     insertion: '무지 말절골 저부',
@@ -222,6 +260,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'anterior tibial artery',
       la: 'arteria tibialis anterior',
     },
+    ta: { edition: 'TA98', code: 'A12.2.16.042' },
+    fmaId: '43894',
     kind: 'vessel',
     origin: '슬와동맥에서 갈라져 골간막을 뚫고 앞 칸으로 넘어온다',
     insertion: '발목을 넘어 족배동맥이 된다',
@@ -235,6 +275,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'interosseous membrane of the leg',
       la: 'membrana interossea cruris',
     },
+    ta: { edition: 'TA98', code: 'A03.6.05.002' },
+    fmaId: '35187',
     kind: 'fascia',
     /* 두 뼈 사이에 팽팽히 걸린 막 — 방향이 없으므로 부착부 2개 */
     attachments: ['경골 골간연', '비골 골간연'],
@@ -250,6 +292,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'flexor retinaculum of the ankle',
       la: 'retinaculum musculorum flexorum',
     },
+    ta: { edition: 'TA98', code: 'A04.7.03.026' },
+    fmaId: '49372',
     kind: 'fascia',
     /* 복사뼈와 종골 사이에 걸친 띠 — 당기는 방향이 없으므로 부착부 2개 */
     attachments: ['안쪽 복사뼈', '종골 내측면'],
@@ -266,6 +310,16 @@ export const lowerLegStructures: Structure[] = [
       en: 'fibular (peroneal) retinacula',
       la: 'retinacula musculorum fibularium',
     },
+    /*
+      `ta`가 없는 자리다. TA98은 이걸 상·하 둘로 나눠 싣는다 —
+      A04.7.03.028 상비골근지대, A04.7.03.029 하비골근지대. 우리는 바깥 복사뼈
+      둘레의 한 덩이로 두었으므로 어느 코드도 이 레코드를 가리키지 않는다.
+      둘 중 하나를 골라 적으면 이 레코드가 아닌 것을 가리키게 되므로 비운다.
+
+      나누지 않는 이유는 이 도구의 단위가 **손끝**이기 때문이다. 두 띠는
+      복사뼈 뒤에서 몇 cm 사이에 붙어 있어 눌러서 갈라낼 수 있는 대상이 아니다.
+      표준이 우리보다 잘게 나눈 자리이지 우리가 틀린 자리가 아니다.
+    */
     kind: 'fascia',
     attachments: ['바깥 복사뼈 뒤', '종골 외측면'],
     action: '비골근건이 복사뼈를 감아 돌 때 튀어나오지 않게 잡는다',
@@ -278,6 +332,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'great saphenous vein',
       la: 'vena saphena magna',
     },
+    ta: { edition: 'TA98', code: 'A12.3.11.003' },
+    fmaId: '21376',
     kind: 'vessel',
     origin: '발등 정맥활 내측',
     insertion: '안쪽 복사뼈 앞을 지나 넓적다리 안쪽으로 올라간다',
@@ -291,6 +347,7 @@ export const lowerLegStructures: Structure[] = [
       en: 'saphenous nerve',
       la: 'nervus saphenus',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.023' },
     kind: 'nerve',
     origin: '대퇴신경의 가지',
     insertion: '종아리 안쪽을 따라 내려가 발 내측 피부',
@@ -304,6 +361,7 @@ export const lowerLegStructures: Structure[] = [
       en: 'tibial nerve',
       la: 'nervus tibialis',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.058' },
     kind: 'nerve',
     origin: '좌골신경에서 갈라짐 (오금 위)',
     insertion: '안쪽 복사뼈 뒤를 지나 내·외측족저신경으로 갈라짐',
@@ -317,6 +375,8 @@ export const lowerLegStructures: Structure[] = [
       en: 'posterior tibial artery',
       la: 'arteria tibialis posterior',
     },
+    ta: { edition: 'TA98', code: 'A12.2.16.055' },
+    fmaId: '43895',
     kind: 'vessel',
     origin: '슬와동맥에서 갈라짐',
     insertion: '발바닥으로 이어짐',
@@ -330,6 +390,7 @@ export const lowerLegStructures: Structure[] = [
       en: 'sural nerve',
       la: 'nervus suralis',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.062' },
     kind: 'nerve',
     origin: '경골신경과 총비골신경의 가지가 합쳐짐',
     insertion: '바깥 복사뼈 뒤를 지나 발 외측 피부',
@@ -346,6 +407,7 @@ export const lowerLegStructures: Structure[] = [
       en: 'common fibular (peroneal) nerve',
       la: 'nervus fibularis communis',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.047' },
     kind: 'nerve',
     origin: '좌골신경에서 갈라짐',
     insertion: '비골 목을 감고 천·심비골신경으로 갈라짐',
@@ -362,6 +424,7 @@ export const lowerLegStructures: Structure[] = [
       en: 'superficial fibular nerve',
       la: 'nervus fibularis superficialis',
     },
+    ta: { edition: 'TA98', code: 'A14.2.07.050' },
     kind: 'nerve',
     origin: '총비골신경에서 갈라짐',
     insertion: '종아리 아래에서 근막을 뚫고 나와 발등 피부',

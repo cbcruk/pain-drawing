@@ -65,15 +65,23 @@ export function structureToTs(structure: Structure): string {
     `      en: ${quote(structure.name.en)},`,
     `      la: ${quote(structure.name.la)},`,
     `    },`,
-    `    kind: ${quote(structure.kind)},`,
   )
+
+  // 식별자는 이름 바로 밑에 — 손으로 쓴 데이터도 같은 자리에 둔다
+  if (structure.ta) {
+    lines.push(
+      `    ta: { edition: ${quote(structure.ta.edition)}, code: ${quote(structure.ta.code)} },`,
+    )
+  }
+  if (structure.fmaId) lines.push(`    fmaId: ${quote(structure.fmaId)},`)
+
+  lines.push(`    kind: ${quote(structure.kind)},`)
 
   const optional: [string, string | undefined][] = [
     ['origin', structure.origin],
     ['insertion', structure.insertion],
     ['action', structure.action],
     ['nerve', structure.nerve],
-    ['fmaId', structure.fmaId],
   ]
 
   for (const [key, value] of optional) {
