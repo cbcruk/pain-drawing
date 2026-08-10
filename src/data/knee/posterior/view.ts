@@ -50,9 +50,35 @@ export const kneePosteriorView: View = {
   landmarks: {
     'medial-epicondyle': [98, 262],
     'lateral-epicondyle': [222, 262],
+    'intercondylar-notch': [160, 250],
+    'tibial-eminence': [160, 312],
+    'tibial-plateau-medial': [104, 318],
+    'tibial-plateau-lateral': [216, 318],
     'fibular-head': [216, 342],
     'popliteal-center': [160, 300],
   },
+  /* 앞 뷰와 같은 분절 구성. 경골조면은 뒤에서 안 보이므로 빠진다 */
+  segments: [
+    {
+      id: 'femur',
+      ko: '대퇴골',
+      landmarks: [
+        'medial-epicondyle',
+        'lateral-epicondyle',
+        'intercondylar-notch',
+      ],
+    },
+    {
+      id: 'tibia',
+      ko: '경골 · 비골',
+      landmarks: [
+        'tibial-eminence',
+        'tibial-plateau-medial',
+        'tibial-plateau-lateral',
+        'fibular-head',
+      ],
+    },
+  ],
   /*
     앞 뷰와 층 개수는 같지만 뜻이 다르다. 뒤에서는 관절낭을 열면 후십자인대가
     바로 나오고 전십자인대가 그 뒤에 숨는다 — 앞뒤가 뒤집힌다.

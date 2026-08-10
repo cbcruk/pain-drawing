@@ -2,7 +2,14 @@ import { useMemo, useState } from 'react'
 import type { TraceSource, View } from '@/types/anatomy.types'
 import { useCopy } from '@/hooks/use-copy'
 import { bundleToJson, bundleToTs, viewProvenanceToTs } from '@/lib/serialize'
-import { draftLabel, draftProblems, toPlacement, toStructure, type Draft } from './draft'
+import {
+  draftLabel,
+  draftProblems,
+  toPlacement,
+  toStructure,
+  type Draft,
+  type SpanResolver,
+} from './draft'
 import { Button, Hint, Panel } from './ui'
 
 interface ExportPanelProps {
@@ -11,6 +18,7 @@ interface ExportPanelProps {
   sourceRef: string
   sourceLicense: string
   sourceTracedAt: string
+  resolveSpan?: SpanResolver
 }
 
 export function ExportPanel({
@@ -19,6 +27,7 @@ export function ExportPanel({
   sourceRef,
   sourceLicense,
   sourceTracedAt,
+  resolveSpan,
 }: ExportPanelProps) {
   const [format, setFormat] = useState<'ts' | 'json'>('ts')
   const { copiedKey, copy } = useCopy()
@@ -38,7 +47,7 @@ export function ExportPanel({
 
     const bundle = {
       structures: ok.map(toStructure),
-      placements: ok.map((d) => toPlacement(d, view.id, source)),
+      placements: ok.map((d) => toPlacement(d, view.id, source, resolveSpan)),
     }
 
     if (format === 'json') {
@@ -61,7 +70,7 @@ export function ExportPanel({
       blocked: bad,
       traced: Boolean(source),
     }
-  }, [drafts, view, format, sourceRef, sourceLicense, sourceTracedAt])
+  }, [drafts, view, format, sourceRef, sourceLicense, sourceTracedAt, resolveSpan])
 
   return (
     <Panel

@@ -127,6 +127,99 @@ export function fitRegistration(
   return { ...chosen, reflectionAmbiguous: undecided }
 }
 
+export interface SegmentedRegistration {
+  /** 분절 id → 변환 */
+  bySegment: Record<string, Registration>
+  /** 대응점이 2개 미만이라 아직 못 구한 분절 */
+  pending: string[]
+  /** 점 개수로 가중한 전체 잔차 */
+  rms: number
+}
+
+/**
+ * 분절마다 따로 정합한다. 자세가 다른 자료를 얹는 유일한 정직한 방법이다 —
+ * 하나의 변환으로 억지로 맞추면 랜드마크는 붙고 그 사이 구조가 전부 틀어진다.
+ *
+ * `reflect`는 전체에 한 번 적용된다. 한 표본을 찍은 한 장이므로 어떤 뼈는
+ * 뒤집히고 어떤 뼈는 안 뒤집히는 일은 없다.
+ */
+export function fitSegmented(
+  pairs: Record<string, Correspondence[]>,
+  reflect?: boolean,
+): SegmentedRegistration {
+  const bySegment: Record<string, Registration> = {}
+  const pending: string[] = []
+
+  let sq = 0
+  let count = 0
+
+  for (const [id, list] of Object.entries(pairs)) {
+    const fitted = fitRegistration(list, reflect)
+
+    if (!fitted) {
+      pending.push(id)
+      continue
+    }
+
+    bySegment[id] = fitted
+    sq += fitted.rms ** 2 * fitted.count
+    count += fitted.count
+  }
+
+  return { bySegment, pending, rms: count > 0 ? Math.sqrt(sq / count) : 0 }
+}
+
+/** 각 점까지의 누적 길이를 0~1로 — 등간격이 아닌 중심선에서도 비율이 맞는다 */
+function arcFractions(points: Pt[]): number[] {
+  const cumulative: number[] = [0]
+
+  for (let i = 1; i < points.length; i++) {
+    const previous = points[i - 1]!
+    const current = points[i]!
+    cumulative.push(
+      cumulative[i - 1]! + Math.hypot(current[0] - previous[0], current[1] - previous[1]),
+    )
+  }
+
+  const total = cumulative[cumulative.length - 1]!
+
+  // 길이가 0이면(점이 겹쳐 있으면) 순번으로 나눈다
+  return total < 1e-9
+    ? points.map((_, i) => (points.length > 1 ? i / (points.length - 1) : 0))
+    : cumulative.map((c) => c / total)
+}
+
+/**
+ * 관절을 건너는 중심선. 첫 점은 `from` 분절의 변환으로, 마지막 점은 `to`의
+ * 변환으로 얹고 사이는 누적 길이 비율로 섞는다.
+ *
+ * **이 구간은 트레이싱이 아니라 재구성이다.** 두 상사변환을 선형으로 섞은 것은
+ * 상사변환이 아니므로 결과가 원본과 닮지 않는다. 그리고 그게 맞다 — 무릎을 펴면
+ * 인대는 실제로 길이와 방향이 달라지므로, 굽힌 자료에서 본 중간부 모양은 편
+ * 자세의 모양이 아니다. **부착부 양 끝은 정확하고 그 사이는 추정이다.**
+ *
+ * 무릎 인대는 거의 전부 여기 해당한다(십자인대·측부인대·슬와근건). 반월판처럼
+ * 한 뼈에만 붙은 구조만 강체 변환으로 온전히 옮겨진다.
+ */
+export function applyAcross(
+  from: Registration,
+  to: Registration,
+  points: Pt[],
+): Pt[] {
+  if (points.length === 0) return []
+  if (points.length === 1) return [applyRegistration(from, points[0]!)]
+
+  const t = arcFractions(points)
+
+  return points.map((point, i) => {
+    const [ax, ay] = applyRegistration(from, point)
+    const [bx, by] = applyRegistration(to, point)
+    const k = t[i]!
+
+    return [ax + (bx - ax) * k, ay + (by - ay) * k]
+  })
+}
+
 export function applyRegistration(reg: Registration, point: Pt): Pt {
   const x = reg.flip ? -point[0] : point[0]
   const y = point[1]

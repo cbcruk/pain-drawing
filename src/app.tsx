@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Probe, Pt } from '@/types/anatomy.types'
 import {
   DEFAULT_VIEW_ID,
-  REGIONS,
+  VISIBLE_REGIONS,
   STRUCTURE_BY_ID,
   getPlacements,
   getAspectVariants,
   getRegionEntry,
   getSideVariants,
   getView,
+  type StructureLocation,
 } from '@/data'
 import { denormalizePoint } from '@/lib/geometry'
 import { probeAt, type ShapeRegistry } from '@/lib/probe'
@@ -26,6 +27,7 @@ import { StructureDetail } from '@/components/structure-detail/structure-detail'
 import { ReferenceExport } from '@/components/reference-export/reference-export'
 import { ViewSwitch } from '@/components/view-switch/view-switch'
 import { RegionSwitch } from '@/components/region-switch/region-switch'
+import { StructureSearch } from '@/components/structure-search/structure-search'
 
 const initial = parseSearch(window.location.search)
 const initialView = getView(initial.viewId ?? DEFAULT_VIEW_ID) ?? getView(DEFAULT_VIEW_ID)!
@@ -55,15 +57,28 @@ export function App() {
   */
   const previousFace = useRef(`${view.region}/${view.aspect}`)
 
+  /*
+    이름으로 찾아 건너온 경우는 예외다. 찾은 구조까지 지워 버리면 옮겨간 이유가
+    사라진다 — 좌표(지시 지점)만 버리고 선택은 들고 간다.
+  */
+  const keepSelection = useRef(false)
+
   useEffect(() => {
     const face = `${view.region}/${view.aspect}`
     if (previousFace.current === face) return
     previousFace.current = face
 
     setProbe(null)
-    setSelectedId(null)
     setHoveredId(null)
     registry.clear()
+
+    if (keepSelection.current) {
+      keepSelection.current = false
+
+      return
+    }
+
+    setSelectedId(null)
   }, [view.region, view.aspect, registry])
 
   // 층 번호는 뷰마다 범위가 다르다. 없는 층에 머무르면 아무것도 안 보인다
@@ -103,6 +118,26 @@ export function App() {
       if (entry) setViewId(entry.id)
     },
     [view.side],
+  )
+
+  /*
+    역방향 조회 — 이름으로 찾아 그 자리로 간다. probe의 반대 방향이라 지시
+    지점이 없다. 대신 그 구조가 있는 뷰·층으로 옮기고 선택만 해 준다.
+    지점을 억지로 만들면 사용자가 짚지도 않은 곳을 짚은 것처럼 URL에 남는다.
+  */
+  const handleFind = useCallback(
+    (structureId: string, location: StructureLocation) => {
+      if (location.view.id !== view.id) {
+        keepSelection.current = true
+        setProbe(null)
+        registry.clear()
+        setViewId(location.view.id)
+      }
+
+      setDepth(location.depth)
+      setSelectedId(structureId)
+    },
+    [view.id, registry],
   )
 
   const handleSelect = useCallback(
@@ -212,9 +247,9 @@ export function App() {
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 lg:grid-cols-[auto_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
-            {REGIONS.length > 1 && (
+            {VISIBLE_REGIONS.length > 1 && (
               <RegionSwitch
-                regions={REGIONS}
+                regions={VISIBLE_REGIONS}
                 regionId={view.region}
                 onChange={handleRegionChange}
               />
@@ -263,6 +298,20 @@ export function App() {
         </div>
 
         <div className="min-w-0">
+          <section className="mb-7">
+            <div
+              className="mb-3 font-mono text-[10px] tracking-[0.16em] uppercase"
+              style={{ color: 'var(--color-muted)' }}
+            >
+              이름으로 찾기 · reverse lookup
+            </div>
+            <StructureSearch
+              view={view}
+              selectedId={selectedId}
+              onPick={handleFind}
+            />
+          </section>
+
           <section className="mb-7">
             <div
               className="mb-3 font-mono text-[10px] tracking-[0.16em] uppercase"

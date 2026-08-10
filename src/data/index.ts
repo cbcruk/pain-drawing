@@ -14,6 +14,28 @@ import { kneeAnteriorLeftView, kneeAnteriorView } from './knee/anterior/view'
 import { kneeAnteriorPlacements } from './knee/anterior/placements'
 import { kneePosteriorLeftView, kneePosteriorView } from './knee/posterior/view'
 import { kneePosteriorPlacements } from './knee/posterior/placements'
+import { lowerLegStructures } from './lower-leg/structures'
+import {
+  lowerLegPosteriorLeftView,
+  lowerLegPosteriorView,
+} from './lower-leg/posterior/view'
+import { lowerLegPosteriorPlacements } from './lower-leg/posterior/placements'
+import {
+  lowerLegLateralLeftView,
+  lowerLegLateralView,
+} from './lower-leg/lateral/view'
+import { lowerLegLateralPlacements } from './lower-leg/lateral/placements'
+import {
+  lowerLegMedialLeftView,
+  lowerLegMedialView,
+} from './lower-leg/medial/view'
+import { lowerLegMedialPlacements } from './lower-leg/medial/placements'
+import {
+  lowerLegAnteriorLeftView,
+  lowerLegAnteriorView,
+} from './lower-leg/anterior/view'
+import { lowerLegAnteriorPlacements } from './lower-leg/anterior/placements'
+import { normalize, scoreStructure } from '@/lib/search'
 import { mirrorPlacements } from './mirror'
 
 export const VIEWS: View[] = [
@@ -25,15 +47,55 @@ export const VIEWS: View[] = [
   kneeAnteriorLeftView,
   kneePosteriorView,
   kneePosteriorLeftView,
+  lowerLegPosteriorView,
+  lowerLegPosteriorLeftView,
+  lowerLegLateralView,
+  lowerLegLateralLeftView,
+  lowerLegMedialView,
+  lowerLegMedialLeftView,
+  lowerLegAnteriorView,
+  lowerLegAnteriorLeftView,
 ]
 
+/*
+  무릎은 **감춰 둔다**. M3의 목적은 `attachments` 스키마 검증이었고 그건
+  끝났지만(옵셔널 필드라 아무것도 강제하지 않는다는 걸 찾아냈다), 부위 자체가
+  이 도구의 전제와 맞지 않는다.
+
+  전제는 "손가락의 대체재"다 — 눌러서 만져지는 것을 가리킨다. 발바닥은 층을
+  파고들어도 그 전제가 유지된다. 눌린 힘이 건막에서 4층까지 실제로 전달된다.
+  무릎은 아니다. 십자인대·반월판은 지목한 점 아래에 있는 게 맞지만 눌러도
+  닿지 않는다. `reachable: false`가 각 항목에 붙긴 해도, 깊이 레일이라는 장치
+  자체가 "계속 내려가 보라"고 권한다.
+
+  데이터는 남긴다. 스키마 검증의 증거이고 URL로는 열린다.
+*/
 export const REGIONS: Region[] = [
   { id: 'foot', ko: '발', en: 'foot', defaultViewId: footPlantarView.id },
-  { id: 'knee', ko: '무릎', en: 'knee', defaultViewId: kneeAnteriorView.id },
+  {
+    id: 'knee',
+    ko: '무릎',
+    en: 'knee',
+    defaultViewId: kneeAnteriorView.id,
+    hidden: true,
+  },
+  {
+    id: 'lower-leg',
+    ko: '종아리',
+    en: 'lower leg',
+    defaultViewId: lowerLegPosteriorView.id,
+  },
 ]
 
+/** 부위 전환에 실제로 나오는 것 */
+export const VISIBLE_REGIONS: Region[] = REGIONS.filter((r) => !r.hidden)
+
 /** 구조는 부위 단위로 모은다. 같은 구조가 여러 뷰에 나타나므로 뷰별로 쪼개지 않는다 */
-export const STRUCTURES: Structure[] = [...footStructures, ...kneeStructures]
+export const STRUCTURES: Structure[] = [
+  ...footStructures,
+  ...kneeStructures,
+  ...lowerLegStructures,
+]
 
 export const PLACEMENTS: StructureInView[] = [
   ...footPlantarPlacements,
@@ -44,6 +106,14 @@ export const PLACEMENTS: StructureInView[] = [
   ...mirrorPlacements(kneeAnteriorPlacements, kneeAnteriorLeftView.id),
   ...kneePosteriorPlacements,
   ...mirrorPlacements(kneePosteriorPlacements, kneePosteriorLeftView.id),
+  ...lowerLegPosteriorPlacements,
+  ...mirrorPlacements(lowerLegPosteriorPlacements, lowerLegPosteriorLeftView.id),
+  ...lowerLegLateralPlacements,
+  ...mirrorPlacements(lowerLegLateralPlacements, lowerLegLateralLeftView.id),
+  ...lowerLegMedialPlacements,
+  ...mirrorPlacements(lowerLegMedialPlacements, lowerLegMedialLeftView.id),
+  ...lowerLegAnteriorPlacements,
+  ...mirrorPlacements(lowerLegAnteriorPlacements, lowerLegAnteriorLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
@@ -56,6 +126,87 @@ export function getView(viewId: string): View | undefined {
 
 export function getPlacements(viewId: string): StructureInView[] {
   return PLACEMENTS.filter((p) => p.viewId === viewId)
+}
+
+const HIDDEN = new Set(REGIONS.filter((r) => r.hidden).map((r) => r.id))
+
+/** 감춘 부위의 뷰는 역방향 조회에도 나오면 안 된다 — 화면에서 뺀 뜻이 없어진다 */
+export function isViewVisible(view: View): boolean {
+  return !HIDDEN.has(view.region)
+}
+
+/** 이 구조가 어느 뷰의 몇 층에 있는가 */
+export interface StructureLocation {
+  view: View
+  depth: number
+  reachable: boolean
+}
+
+export function getLocations(structureId: string): StructureLocation[] {
+  const out: StructureLocation[] = []
+
+  for (const placement of PLACEMENTS) {
+    if (placement.structureId !== structureId) continue
+
+    const view = getView(placement.viewId)
+    if (!view || !isViewVisible(view)) continue
+
+    out.push({ view, depth: placement.depth, reachable: placement.reachable })
+  }
+
+  return out
+}
+
+export interface SearchHit {
+  structure: Structure
+  locations: StructureLocation[]
+}
+
+/**
+ * 이름 → 위치. probe의 반대 방향이다.
+ *
+ * 어디에도 놓이지 않은 구조는 결과에서 뺀다 — 이름은 있는데 짚어줄 자리가
+ * 없으면 위치 도구로서 할 말이 없다.
+ */
+export function searchStructures(query: string, limit = 12): SearchHit[] {
+  const needle = normalize(query)
+  if (!needle) return []
+
+  const scored: [number, SearchHit][] = []
+
+  for (const structure of STRUCTURES) {
+    const score = scoreStructure(needle, structure)
+    if (score === null) continue
+
+    const locations = getLocations(structure.id)
+    if (locations.length === 0) continue
+
+    scored.push([score, { structure, locations }])
+  }
+
+  return scored
+    .sort((a, b) => b[0] - a[0])
+    .slice(0, limit)
+    .map(([, hit]) => hit)
+}
+
+/**
+ * 이 구조를 보려면 어느 뷰로 가야 하는가. 지금 뷰에 있으면 그대로 두고,
+ * 없으면 **같은 쪽(좌우)을 먼저** 찾는다 — 이름을 눌렀다고 반대쪽 발로
+ * 건너뛰면 사용자가 보던 발이 바뀐다.
+ */
+export function pickLocation(
+  locations: StructureLocation[],
+  current: View,
+): StructureLocation | undefined {
+  return (
+    locations.find((l) => l.view.id === current.id) ??
+    locations.find(
+      (l) => l.view.region === current.region && l.view.side === current.side,
+    ) ??
+    locations.find((l) => l.view.region === current.region) ??
+    locations[0]
+  )
 }
 
 /** 같은 부위·같은 면을 좌우로 본 뷰 — 오른쪽 ↔ 왼쪽 전환의 대상 */

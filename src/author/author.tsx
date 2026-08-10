@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Pt } from '@/types/anatomy.types'
 import { PLACEMENTS, STRUCTURES, VIEWS, getPlacements, getView } from '@/data'
 import {
-  fitRegistration,
+  applyAcross,
+  fitSegmented,
   fitToViewBox,
   invertRegistration,
   type Correspondence,
@@ -25,6 +26,9 @@ import { clearSession, loadSession, saveSession, type LandmarkPick } from './sto
 import { Button, Hint, Panel } from './ui'
 
 const HISTORY_LIMIT = 60
+
+/** 분절이 없는 뷰의 유일한 분절 이름 — 발처럼 뷰 전체가 하나의 강체인 경우 */
+const SINGLE = '*'
 
 const saved = loadSession()
 const firstView = VIEWS[0]!
@@ -85,10 +89,31 @@ export function Author() {
 
   /* ---- 정합 ---- */
 
-  const landmarkKeys = useMemo(
-    () => Object.keys(view.landmarks ?? {}),
-    [view.landmarks],
+  /*
+    분절이 있는 뷰(무릎)에서는 자료 한 장이 뷰 전체에 얹히지 않는다. 뼈마다
+    변환이 다르므로 **한 번에 한 분절씩** 정합하고, 그 분절의 변환 아래에서
+    그 뼈에 붙은 구조를 그린다. 분절이 없는 뷰(발)는 지금까지와 똑같다.
+  */
+  const segments = view.segments ?? null
+  const [segmentId, setSegmentId] = useState<string | null>(
+    segments?.[0]?.id ?? null,
   )
+
+  // 뷰를 바꾸면 분절도 그 뷰의 것으로 — 안 그러면 이전 뷰의 id가 남아 어느
+  // 분절에도 안 걸리고, 정합 대상이 조용히 랜드마크 전체로 돌아간다
+  useEffect(() => {
+    setSegmentId(view.segments?.[0]?.id ?? null)
+  }, [view])
+
+  const activeSegment = segments?.find((s) => s.id === segmentId) ?? null
+
+  const landmarkKeys = useMemo(() => {
+    const all = Object.keys(view.landmarks ?? {})
+
+    return activeSegment
+      ? activeSegment.landmarks.filter((key) => all.includes(key))
+      : all
+  }, [view.landmarks, activeSegment])
 
   const provisional = useMemo(
     () =>
@@ -96,18 +121,51 @@ export function Author() {
     [imageSize, view.viewBox],
   )
 
-  const fitted = useMemo(() => {
+  /** 분절 id(또는 분절이 없으면 단일 키) → 그 분절에 찍힌 대응점 */
+  const pairsBySegment = useMemo(() => {
     const landmarks = view.landmarks
-    if (!landmarks) return null
+    if (!landmarks) return {}
 
-    const pairs: Correspondence[] = []
+    const owner = (key: string): string =>
+      segments?.find((s) => s.landmarks.includes(key))?.id ?? SINGLE
+
+    const out: Record<string, Correspondence[]> = {}
     for (const pick of picks) {
       const target = landmarks[pick.landmark]
-      if (target) pairs.push({ from: pick.image, to: target })
+      if (!target) continue
+
+      const id = owner(pick.landmark)
+      ;(out[id] ??= []).push({ from: pick.image, to: target })
     }
 
-    return fitRegistration(pairs)
-  }, [picks, view.landmarks])
+    return out
+  }, [picks, view.landmarks, segments])
+
+  const segmented = useMemo(
+    () => fitSegmented(pairsBySegment),
+    [pairsBySegment],
+  )
+
+  const fitted = segmented.bySegment[segmentId ?? SINGLE] ?? null
+
+  /*
+    걸친 도형을 푸는 법. 화면 점은 출발 분절의 변환 아래에서 찍혔으므로 일단
+    이미지 좌표로 되돌린 뒤 두 변환 사이를 보간한다. 그래서 출발 쪽 끝은 그린
+    자리에 그대로 남고, 도착 쪽 끝만 그 뼈의 자리로 옮겨간다.
+
+    두 변환이 다 없으면 손대지 않는다 — 정합이 덜 된 상태에서 좌표를 조용히
+    흔들면 무엇을 그린 건지 알 수 없게 된다.
+  */
+  const resolveSpan = useCallback(
+    (points: Pt[], [fromId, toId]: [string, string]): Pt[] => {
+      const from = segmented.bySegment[fromId]
+      const to = segmented.bySegment[toId]
+      if (!from || !to) return points
+
+      return applyAcross(from, to, points.map((p) => invertRegistration(from, p)))
+    },
+    [segmented],
+  )
 
   const registration = fitted ?? provisional
   const nextLandmark =
@@ -430,6 +488,7 @@ export function Author() {
             activeShapeKey={activeShapeKey}
             selectedPoint={selectedPoint}
             landmarks={landmarkTargets}
+            resolveSpan={resolveSpan}
             onPick={handlePick}
             onMovePoint={movePoint}
             onSelectPoint={setSelectedPoint}
@@ -535,6 +594,9 @@ export function Author() {
 
           <CalibrationPanel
             view={view}
+            segmentId={segmentId}
+            segmented={segmented}
+            onSegment={setSegmentId}
             imageName={imageName}
             registration={fitted}
             calibrated={Boolean(fitted)}
@@ -557,7 +619,17 @@ export function Author() {
 
           <ShapePanel
             draft={activeDraft}
+            segments={segments}
             activeShapeKey={activeShapeKey}
+            onSpan={(span) =>
+              patchActiveShape((shape) => {
+                if (!span) {
+                  const { span: _drop, ...rest } = shape
+                  return rest
+                }
+                return { ...shape, span }
+              })
+            }
             selectedPoint={selectedPoint}
             canUndo={canUndo}
             onAddShape={(t) => {
@@ -624,6 +696,7 @@ export function Author() {
             sourceRef={sourceRef}
             sourceLicense={sourceLicense}
             sourceTracedAt={sourceTracedAt}
+            resolveSpan={resolveSpan}
           />
         </div>
       </div>
