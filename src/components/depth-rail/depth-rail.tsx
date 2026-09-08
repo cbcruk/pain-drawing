@@ -1,4 +1,4 @@
-import type { Layer, Probe } from '@/types/anatomy.types'
+import type { Layer, PlateOverlay, Probe } from '@/types/anatomy.types'
 import { depthBarColor } from './depth-rail.utils'
 
 interface DepthRailProps {
@@ -6,8 +6,12 @@ interface DepthRailProps {
   depth: number
   probe: Probe | null
   showBones: boolean
+  /** 지금 층을 그린 도판. 없으면 토글 자체를 안 낸다 */
+  plates: PlateOverlay[]
+  showPlates: boolean
   onDepthChange: (depth: number) => void
   onShowBonesChange: (show: boolean) => void
+  onShowPlatesChange: (show: boolean) => void
 }
 
 export function DepthRail({
@@ -15,8 +19,11 @@ export function DepthRail({
   depth,
   probe,
   showBones,
+  plates,
+  showPlates,
   onDepthChange,
   onShowBonesChange,
+  onShowPlatesChange,
 }: DepthRailProps) {
   const maxDepth = Math.max(...layers.map((layer) => layer.depth))
 
@@ -113,6 +120,39 @@ export function DepthRail({
         />
         뼈 참조
       </label>
+
+      {/*
+        도판이 없는 뷰에는 토글도 없다. 일관성보다 **없는 걸 있다고 하지 않는
+        쪽**을 택한 것이고, 왼쪽 뷰에서 사라지는 것도 그 뷰가 파생이라는 사실
+        그대로다 — ADR 0001.
+      */}
+      {plates.length > 0 && (
+        <>
+          <label
+            className="mt-2 flex cursor-pointer items-center gap-2 pl-4 text-[11px]"
+            style={{ color: 'var(--color-dim)' }}
+          >
+            <input
+              type="checkbox"
+              checked={showPlates}
+              onChange={(event) => onShowPlatesChange(event.target.checked)}
+              className="accent-[var(--color-accent)]"
+            />
+            도판 겹치기
+          </label>
+
+          {showPlates &&
+            plates.map((plate) => (
+              <p
+                key={plate.src}
+                className="mt-1.5 pl-4 text-[10px] leading-snug"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                {plate.source.ref}
+              </p>
+            ))}
+        </>
+      )}
     </div>
   )
 }

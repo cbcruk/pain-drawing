@@ -6,8 +6,9 @@ import {
   toLocalPoint,
 } from '@/lib/geometry'
 import { TISSUE } from '@/data/tissue'
+import { shapeKey } from '@/lib/probe'
 import type { AnatomyViewProps } from './anatomy-view.types'
-import { shapeStyle, sortForPainting } from './anatomy-view.utils'
+import { plateMatrix, shapeStyle, sortForPainting } from './anatomy-view.utils'
 
 /*
   같은 오른발이라도 발바닥이냐 발등이냐에 따라 내측이 반대 편에 온다. 도해가
@@ -34,6 +35,7 @@ export function AnatomyView({
   hoveredId,
   pinPoint,
   showBones,
+  showPlates,
   registry,
   onProbe,
   onHover,
@@ -66,6 +68,16 @@ export function AnatomyView({
   )
 
   const mirror = view.mirrorOf ? mirrorTransform(view.viewBox) : undefined
+
+  /*
+    지금 층을 그린 도판만 보여준다. Gray430은 피부와 근막을 벗긴 그림이라
+    L0·L3에서 켜면 그 층까지 도판이 보증하는 것처럼 읽힌다 — ADR 0001.
+  */
+  const plates = useMemo(
+    () => (showPlates ? (view.plates ?? []).filter((p) => p.depths.includes(depth)) : []),
+    [showPlates, view.plates, depth],
+  )
+  const clipId = `outline-${view.id}`
 
   const handleClick = useCallback(
     (event: React.MouseEvent<SVGSVGElement>) => {
@@ -100,6 +112,37 @@ export function AnatomyView({
             stroke="var(--color-rule)"
             strokeWidth="1"
           />
+
+          {/*
+            도판은 **클릭 대상이 아니다.** 히트테스트는 SVG 도형의
+            `isPointInFill`로 남고 이 이미지는 근거를 눈으로 보여줄 뿐이라
+            `pointer-events: none`을 건다. 윤곽으로 자르는 이유는 도판이 우리
+            프레임보다 크기 때문이다 — 골반이나 볼기가 딸려 들어온다.
+          */}
+          {plates.length > 0 && (
+            <>
+              <clipPath id={clipId}>
+                <path d={view.outline} />
+              </clipPath>
+              <g clipPath={`url(#${clipId})`} pointerEvents="none">
+                {plates.map((plate) => (
+                  <image
+                    key={plate.src}
+                    href={plate.src}
+                    width={plate.size.w}
+                    height={plate.size.h}
+                    transform={plateMatrix(plate.place)}
+                    /*
+                      근거로 깔리는 그림이지 주인공이 아니다. 층 색과 도판의
+                      분홍이 경쟁하지 않도록 채도를 반쯤 빼고 옅게 깐다.
+                    */
+                    opacity="0.42"
+                    style={{ filter: 'grayscale(0.55)' }}
+                  />
+                ))}
+              </g>
+            </>
+          )}
           {silhouettePaths.map((d, i) => (
             <path
               key={i}
@@ -140,19 +183,27 @@ export function AnatomyView({
 
             return (
               <g
-                key={placement.structureId}
+                key={shapeKey(placement.structureId, placement.depth)}
                 pointerEvents={active ? 'auto' : 'none'}
                 aria-hidden={active ? undefined : true}
                 onMouseEnter={() => onHover(placement.structureId)}
                 onMouseLeave={() => onHover(null)}
               >
+                {/*
+                  한 층에 열 개가 놓이는 자리가 생겼다(허벅지 앞 L1). 도형을
+                  눌러 상세를 열기 전에는 무엇인지 알 방법이 없었으므로 이름을
+                  붙인다. 활성 층만 `pointer-events`가 살아 있어 지금 층에서만
+                  뜬다.
+                */}
+                {active && <title>{structure.name.ko.classic}</title>}
                 {ds.map((d, i) => (
                   <path
                     key={i}
                     ref={(el) => {
-                      const list = registry.get(placement.structureId) ?? []
+                      const key = shapeKey(placement.structureId, placement.depth)
+                      const list = registry.get(key) ?? []
                       list[i] = el
-                      registry.set(placement.structureId, list)
+                      registry.set(key, list)
                     }}
                     d={d}
                     className="shape"

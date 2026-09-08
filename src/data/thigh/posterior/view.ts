@@ -82,7 +82,25 @@ export const thighPosteriorView: View = {
     장내전근·단내전근이 그 위를 덮기 때문이다. 뒤에서는 아무것도 안 덮는다 —
     깊이가 절대 위치가 아니라 그 뷰가 들어가는 방향으로 잰 거리라는 규칙이
     한 부위 안에서 두 번째로 나타나는 자리다(첫 번째는 대퇴동맥).
+
+    **그리고 같은 근육이 이 뷰의 L3에도 있다.** 가운데에서는 햄스트링에 덮여
+    바닥이 되기 때문이다. 깊이가 뷰의 성질이 아니라 **점의 성질**이라는 것을
+    한 뷰 안에서 보여주는 자리이고, 근거는 ADR 0002.
   */
+  /* 앞 뷰와 같은 배율 0.9 · tx = 60 − 95×0.9 · ty = 40 − 300×0.9 */
+  plates: [
+    {
+      src: 'plates/Gray434.png',
+      size: { w: 368, h: 1000 },
+      place: { a: 0.9, b: 0, tx: -25.5, ty: -230 },
+      depths: [1, 2],
+      source: {
+        ref: "Gray's Anatomy 1918, Fig. 434 (muscles of the gluteal and posterior femoral regions)",
+        license: 'Public domain (US)',
+        tracedAt: '2026-09-08',
+      },
+    },
+  ],
   layers: [
     {
       depth: 0,
@@ -104,9 +122,9 @@ export const thighPosteriorView: View = {
     },
     {
       depth: 3,
-      ko: '좌골신경',
-      en: 'sciatic nerve',
-      hint: '햄스트링을 젖히면 그 밑에 있다. 오금 위에서 둘로 갈린다',
+      ko: '좌골신경 · 대내전근',
+      en: 'sciatic nerve & adductor magnus',
+      hint: '햄스트링을 젖히면 나오는 바닥과, 그 위에 얹혀 내려가는 신경',
     },
   ],
 }

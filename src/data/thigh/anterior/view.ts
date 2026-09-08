@@ -94,6 +94,28 @@ export const thighAnteriorView: View = {
     내전근관으로 들어가 깊어지기 때문이다 — 깊이가 절대 위치가 아니라 그 뷰가
     들어가는 방향으로 잰 거리라는 것을 이 부위에서 다시 보여주는 자리다.
   */
+  /*
+    도판을 뷰 위에 도로 얹는 변환이다. 윤곽과 traced 좌표가 온 그 변환이라
+    (등방 배율 0.9 · 회전 없음 · 평행이동) 숫자가 여기서 처음 나오는 게 아니다.
+    `a`가 배율, `tx`·`ty`는 도판 원점이 뷰에서 어디로 가는지다:
+    tx = 60 − 51×0.9 · ty = 40 − 370×0.9.
+
+    `depths`가 [1, 2]인 이유는 Gray430이 피부와 근막을 벗긴 그림이기 때문이다.
+    L0(근막)와 L3(뼈에 붙은 층)은 그리지 않으므로 그 층에서는 보여주지 않는다.
+  */
+  plates: [
+    {
+      src: 'plates/Gray430.png',
+      size: { w: 354, h: 1229 },
+      place: { a: 0.9, b: 0, tx: 14.1, ty: -293 },
+      depths: [1, 2],
+      source: {
+        ref: "Gray's Anatomy 1918, Fig. 430 (muscles of the iliac and anterior femoral regions)",
+        license: 'Public domain (US)',
+        tracedAt: '2026-09-08',
+      },
+    },
+  ],
   layers: [
     {
       depth: 0,

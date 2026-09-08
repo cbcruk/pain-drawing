@@ -17,6 +17,11 @@ export function mirrorView(source: View, overrides: MirrorOverrides): View {
     ...overrides,
     side: source.side === 'right' ? 'left' : 'right',
     mirrorOf: source.id,
+    /*
+      도판은 딸려 오면 안 된다. 반전 뷰 안에서는 인쇄된 라벨이 거울로 뒤집혀
+      읽히고, 애초에 도판이 그린 것은 원본 쪽 다리다 — ADR 0001.
+    */
+    plates: undefined,
     edges: source.edges && {
       left: source.edges.right,
       right: source.edges.left,

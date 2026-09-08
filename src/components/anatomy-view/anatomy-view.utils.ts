@@ -1,4 +1,8 @@
-import type { StructureInView, Tissue } from '@/types/anatomy.types'
+import type {
+  PlateOverlay,
+  StructureInView,
+  Tissue,
+} from '@/types/anatomy.types'
 import { TISSUE } from '@/data/tissue'
 import { withSaturation } from '@/lib/color'
 import type { ShapeStyle, ShapeStyleInput } from './anatomy-view.types'
@@ -86,4 +90,18 @@ export function sortForPainting(
   return [...placements].sort(
     (a, b) => band(a.depth) - band(b.depth) || b.depth - a.depth,
   )
+}
+
+/**
+ * 도판 px → 뷰 좌표 상사변환을 SVG matrix로 바꾼다.
+ *
+ * `applyRegistration`이 쓰는 식과 같다: x' = a·x − b·y + tx, y' = b·x + a·y + ty.
+ * SVG `matrix(a b c d e f)`는 (x, y) → (a·x + c·y + e, b·x + d·y + f)이므로
+ * c = −b, d = a가 된다. `flip`은 x를 먼저 뒤집는 것이라 a와 b의 부호만 바뀐다.
+ */
+export function plateMatrix(place: PlateOverlay['place']): string {
+  const { a, b, tx, ty, flip } = place
+  const sx = flip ? -1 : 1
+
+  return `matrix(${a * sx} ${b * sx} ${-b} ${a} ${tx} ${ty})`
 }
