@@ -47,8 +47,16 @@ export function App() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [probe, setProbe] = useState<Probe | null>(null)
   const [showBones, setShowBones] = useState(true)
+  /* 도판 겹치기는 기본 꺼짐이다 — 켤 때 처음 내려오므로 초기 전송량이 안 는다 */
+  const [showPlates, setShowPlates] = useState(false)
 
   const registry = useRef<ShapeRegistry>(new Map()).current
+
+  /* 지금 층을 그린 도판. 레일의 토글과 도해가 같은 판단을 봐야 한다 */
+  const platesHere = useMemo(
+    () => (view.plates ?? []).filter((plate) => plate.depths.includes(depth)),
+    [view.plates, depth],
+  )
 
   /*
     면이나 부위를 바꾸면 다른 구조가 놓인 다른 공간이다. 층 수도 층 번호의 뜻도
@@ -88,10 +96,24 @@ export function App() {
     setDepth(view.layers[view.layers.length - 1]?.depth ?? 0)
   }, [view, depth])
 
+  /*
+    한 구조가 한 뷰 안에서 두 깊이에 놓일 수 있다(ADR 0002). 그래서 "이 구조의
+    자리"를 찾을 때 **지금 층을 먼저 본다** — 안 그러면 배열 순서가 답을 정하게
+    되고, 대내전근을 L3에서 고른 사용자에게 L1 자리의 근거를 보여주게 된다.
+  */
+  const placementOf = useCallback(
+    (structureId: string | null) =>
+      structureId === null
+        ? undefined
+        : (placements.find(
+            (p) => p.structureId === structureId && p.depth === depth,
+          ) ?? placements.find((p) => p.structureId === structureId)),
+    [placements, depth],
+  )
+
   const depthOf = useCallback(
-    (structureId: string): number | undefined =>
-      placements.find((p) => p.structureId === structureId)?.depth,
-    [placements],
+    (structureId: string): number | undefined => placementOf(structureId)?.depth,
+    [placementOf],
   )
 
   const runProbe = useCallback(
@@ -188,12 +210,8 @@ export function App() {
   )
 
   const selectedProvenance = useMemo(
-    () =>
-      effectiveProvenance(
-        placements.find((p) => p.structureId === selectedId),
-        view,
-      ),
-    [placements, selectedId, view],
+    () => effectiveProvenance(placementOf(selectedId), view),
+    [placementOf, selectedId, view],
   )
 
   const visibleOnLayer = useMemo(
@@ -277,8 +295,11 @@ export function App() {
               depth={depth}
               probe={probe}
               showBones={showBones}
+              plates={platesHere}
+              showPlates={showPlates}
               onDepthChange={setDepth}
               onShowBonesChange={setShowBones}
+              onShowPlatesChange={setShowPlates}
             />
             <AnatomyView
               view={view}
@@ -289,6 +310,7 @@ export function App() {
               hoveredId={hoveredId}
               pinPoint={probe?.point ?? null}
               showBones={showBones}
+              showPlates={showPlates}
               registry={registry}
               onProbe={handleProbe}
               onHover={setHoveredId}

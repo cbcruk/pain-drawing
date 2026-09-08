@@ -119,7 +119,11 @@ export const thighMedialPlacements: StructureInView[] = [
     reachable: true,
     fidelity: 'schematic',
     shapes: [
-      { t: 'ribbon', p: [[195, 110], [186, 170], [177, 230]], w: [51, 57, 48] },
+      {
+        t: 'ribbon',
+        p: [[197, 98], [190, 152], [181, 212], [173, 264]],
+        w: [46, 66, 70, 56],
+      },
     ],
   },
   {
@@ -146,8 +150,8 @@ export const thighMedialPlacements: StructureInView[] = [
     shapes: [
       {
         t: 'ribbon',
-        p: [[108, 140], [105, 240], [111, 340], [120, 430]],
-        w: [45, 54, 51, 42],
+        p: [[112, 92], [106, 180], [106, 272], [112, 362], [120, 452]],
+        w: [46, 70, 78, 68, 48],
       },
     ],
   },

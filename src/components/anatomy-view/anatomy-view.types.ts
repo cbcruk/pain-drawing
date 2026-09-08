@@ -34,6 +34,7 @@ export interface AnatomyViewProps {
   hoveredId: string | null
   pinPoint: Pt | null
   showBones: boolean
+  showPlates: boolean
   registry: ShapeRegistry
   onProbe: (point: Pt) => void
   onHover: (id: string | null) => void

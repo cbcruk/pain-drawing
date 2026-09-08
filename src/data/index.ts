@@ -340,9 +340,33 @@ if (import.meta.env?.DEV) {
     }
   }
 
+  for (const v of VIEWS) {
+    for (const plate of v.plates ?? []) {
+      // 없는 층을 그렸다고 하면 토글이 아무 데서도 안 켜진다 — 조용히 사라지는 실수
+      for (const d of plate.depths) {
+        if (!v.layers.some((l) => l.depth === d)) {
+          problems.push(`도판이 없는 depth를 가리킨다: ${v.id} → ${plate.src} L${d}`)
+        }
+      }
+      if (plate.depths.length === 0) {
+        problems.push(`도판에 depths가 비어 있다: ${v.id} → ${plate.src}`)
+      }
+      // 반전 뷰의 도판은 라벨이 거울로 뒤집힌다
+      if (v.mirrorOf) {
+        problems.push(`반전 뷰에 도판이 붙어 있다: ${v.id} → ${plate.src}`)
+      }
+    }
+  }
+
+  /*
+    키에 depth가 들어간다 — 한 구조가 한 뷰 안에서 두 깊이에 놓일 수 있다
+    (ADR 0002). 대내전근이 허벅지 뒤에서 안쪽 모서리는 근막 바로 밑이고
+    가운데는 햄스트링 밑인 것이 그 사례다. 같은 깊이에 두 번은 여전히 오류다.
+  */
   const seenPlacement = new Set<string>()
+  const sameStructure = new Map<string, StructureInView[]>()
   for (const p of PLACEMENTS) {
-    const key = `${p.viewId}/${p.structureId}`
+    const key = `${p.viewId}/${p.structureId}/L${p.depth}`
 
     if (!seenView.has(p.viewId)) problems.push(`없는 viewId 참조: ${key}`)
     if (!STRUCTURE_BY_ID.has(p.structureId)) {
@@ -351,9 +375,53 @@ if (import.meta.env?.DEV) {
     if (seenPlacement.has(key)) problems.push(`중복 placement: ${key}`)
     seenPlacement.add(key)
 
+    const group = `${p.viewId}/${p.structureId}`
+    sameStructure.set(group, [...(sameStructure.get(group) ?? []), p])
+
     const view = getView(p.viewId)
     if (view && !view.layers.some((l) => l.depth === p.depth)) {
       problems.push(`뷰에 없는 depth: ${key} → L${p.depth}`)
+    }
+  }
+
+  /*
+    한 뷰에 두 번 놓인 구조는 **서로 다른 자리**여야 한다. 같은 자리가 두
+    깊이에 동시에 있다는 말은 성립하지 않는다 — 피부에서 재는 거리는 한 점에서
+    하나뿐이다. 경계 상자가 절반 넘게 겹치면 복사해 붙이고 depth만 고친 것으로
+    본다. 근사이지만 막으려는 실수는 확실히 걸린다.
+  */
+  const shapeBox = (p: StructureInView) => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+    for (const s of p.shapes) {
+      const pts: [number, number, number][] =
+        s.t === 'ribbon'
+          ? s.p.map((q, i) => [q[0], q[1], (s.w[i] ?? 0) / 2])
+          : [[s.c[0], s.c[1], s.r]]
+      for (const [x, y, r] of pts) {
+        x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r)
+        y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r)
+      }
+    }
+    return { x0, y0, x1, y1, area: Math.max(0, x1 - x0) * Math.max(0, y1 - y0) }
+  }
+
+  for (const [group, list] of sameStructure) {
+    if (list.length < 2) continue
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = shapeBox(list[i]!)
+        const b = shapeBox(list[j]!)
+        const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)
+        const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0)
+        if (w <= 0 || h <= 0) continue
+        const share = (w * h) / Math.min(a.area, b.area)
+        if (share > 0.5) {
+          problems.push(
+            `같은 구조의 두 자리가 겹친다: ${group} ` +
+              `L${list[i]!.depth}·L${list[j]!.depth} (${Math.round(share * 100)}%)`,
+          )
+        }
+      }
     }
   }
 
