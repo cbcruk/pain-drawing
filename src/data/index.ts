@@ -35,6 +35,18 @@ import {
   lowerLegAnteriorView,
 } from './lower-leg/anterior/view'
 import { lowerLegAnteriorPlacements } from './lower-leg/anterior/placements'
+import { thighStructures } from './thigh/structures'
+import {
+  thighPosteriorLeftView,
+  thighPosteriorView,
+} from './thigh/posterior/view'
+import { thighPosteriorPlacements } from './thigh/posterior/placements'
+import { thighAnteriorLeftView, thighAnteriorView } from './thigh/anterior/view'
+import { thighAnteriorPlacements } from './thigh/anterior/placements'
+import { thighMedialLeftView, thighMedialView } from './thigh/medial/view'
+import { thighMedialPlacements } from './thigh/medial/placements'
+import { thighLateralLeftView, thighLateralView } from './thigh/lateral/view'
+import { thighLateralPlacements } from './thigh/lateral/placements'
 import { normalize, scoreStructure } from '@/lib/search'
 import { mirrorPlacements } from './mirror'
 
@@ -55,6 +67,14 @@ export const VIEWS: View[] = [
   lowerLegMedialLeftView,
   lowerLegAnteriorView,
   lowerLegAnteriorLeftView,
+  thighPosteriorView,
+  thighPosteriorLeftView,
+  thighAnteriorView,
+  thighAnteriorLeftView,
+  thighMedialView,
+  thighMedialLeftView,
+  thighLateralView,
+  thighLateralLeftView,
 ]
 
 /*
@@ -85,6 +105,17 @@ export const REGIONS: Region[] = [
     en: 'lower leg',
     defaultViewId: lowerLegPosteriorView.id,
   },
+  /*
+    허벅지의 기본 면이 뒤인 이유는 통증 빈도다. 햄스트링 파열과 좌골신경통이
+    전부 뒤에 있고 둘 다 손가락으로 자리를 짚는다. 발이 발바닥으로, 종아리가
+    뒤로 열리는 것과 같은 기준이다 — 그 부위에서 가장 자주 짚히는 면.
+  */
+  {
+    id: 'thigh',
+    ko: '허벅지',
+    en: 'thigh',
+    defaultViewId: thighPosteriorView.id,
+  },
 ]
 
 /** 부위 전환에 실제로 나오는 것 */
@@ -95,6 +126,7 @@ export const STRUCTURES: Structure[] = [
   ...footStructures,
   ...kneeStructures,
   ...lowerLegStructures,
+  ...thighStructures,
 ]
 
 export const PLACEMENTS: StructureInView[] = [
@@ -114,6 +146,14 @@ export const PLACEMENTS: StructureInView[] = [
   ...mirrorPlacements(lowerLegMedialPlacements, lowerLegMedialLeftView.id),
   ...lowerLegAnteriorPlacements,
   ...mirrorPlacements(lowerLegAnteriorPlacements, lowerLegAnteriorLeftView.id),
+  ...thighPosteriorPlacements,
+  ...mirrorPlacements(thighPosteriorPlacements, thighPosteriorLeftView.id),
+  ...thighAnteriorPlacements,
+  ...mirrorPlacements(thighAnteriorPlacements, thighAnteriorLeftView.id),
+  ...thighMedialPlacements,
+  ...mirrorPlacements(thighMedialPlacements, thighMedialLeftView.id),
+  ...thighLateralPlacements,
+  ...mirrorPlacements(thighLateralPlacements, thighLateralLeftView.id),
 ]
 
 export const STRUCTURE_BY_ID: Map<string, Structure> = new Map(
